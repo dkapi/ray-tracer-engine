@@ -1,10 +1,9 @@
-#include <vec3.h>
-#include <color.h>
-
+#include "vec3.h"
+#include "color.h"
 #include <stdint.h>
 
-#define X 256
-#define Y 256
+#define X 1024
+#define Y 1024
 
 #define R 0
 #define G 1
@@ -21,7 +20,11 @@ int main(int argc, char *argv[])
 
     for (y = 0; y < Y; y++) {
         for(x = 0; x < X; x++) {
-            vec3 pixel_colors = vec3_create_values((double) x / X, (double) y / Y, 0);
+            vec3 pixel_colors = {
+                .x = (double) x / X,
+                .y = (double) y / Y,
+                .z = 0
+            };
             write_color(img, pixel_colors);
         }
     }

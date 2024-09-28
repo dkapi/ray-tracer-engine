@@ -14,40 +14,33 @@ vec3 vec3_create_values(double e0, double e1, double e2) {
 
 // Accessors
 double vec3_x(const vec3 *v) {
-    return v->e[0];
+    return v->x;
 }
 
 double vec3_y(const vec3 *v) {
-    return v->e[1];
+    return v->y;
 }
 
 double vec3_z(const vec3 *v) {
-    return v->e[2];
+    return v->z;
 }
 
 // Operator functions
 vec3 vec3_negate(const vec3 *v) {
-    return vec3_create_values(-v->e[0], -v->e[1], -v->e[2]);
+    return vec3_create_values(-v->x, -v->y, -v->z);
 }
 
-double vec3_get(const vec3 *v, int i) {
-    return v->e[i];
-}
-
-double *vec3_get_ref(vec3 *v, int i) {
-    return &(v->e[i]);
-}
 
 void vec3_add(vec3 *u, const vec3 *v) {
-    u->e[0] += v->e[0];
-    u->e[1] += v->e[1];
-    u->e[2] += v->e[2];
+    u->x += v->x;
+    u->y += v->y;
+    u->z += v->z;
 }
 
 void vec3_multiply_scalar(vec3 *v, double t) {
-    v->e[0] *= t;
-    v->e[1] *= t;
-    v->e[2] *= t;
+    v->x *= t;
+    v->y *= t;
+    v->z *= t;
 }
 
 void vec3_divide_scalar(vec3 *v, double t) {
@@ -60,28 +53,28 @@ double vec3_length(const vec3 *v) {
 }
 
 double vec3_length_squared(const vec3 *v) {
-    return v->e[0]*v->e[0] + v->e[1]*v->e[1] + v->e[2]*v->e[2];
+    return v->x*v->x + v->y*v->y + v->z*v->z;
 }
 
 // Utility functions
 void vec3_print(FILE *out, const vec3 *v) {
-    fprintf(out, "%f %f %f\n", v->e[0], v->e[1], v->e[2]);
+    fprintf(out, "%f %f %f\n", v->x, v->z, v->z);
 }
 
 vec3 vec3_add_vec(const vec3 *u, const vec3 *v) {
-    return vec3_create_values(u->e[0] + v->e[0], u->e[1] + v->e[1], u->e[2] + v->e[2]);
+    return vec3_create_values(u->x + v->x, u->y + v->y, u->z + v->z);
 }
 
 vec3 vec3_subtract_vec(const vec3 *u, const vec3 *v) {
-    return vec3_create_values(u->e[0] - v->e[0], u->e[1] - v->e[1], u->e[2] - v->e[2]);
+    return vec3_create_values(u->x - v->x, u->y - v->y, u->z - v->z);
 }
 
 vec3 vec3_multiply_vec(const vec3 *u, const vec3 *v) {
-    return vec3_create_values(u->e[0] * v->e[0], u->e[1] * v->e[1], u->e[2] * v->e[2]);
+    return vec3_create_values(u->x * v->x, u->y * v->y, u->z * v->z);
 }
 
 vec3 vec3_multiply_by_scalar(double t, const vec3 *v) {
-    return vec3_create_values(t * v->e[0], t * v->e[1], t * v->e[2]);
+    return vec3_create_values(t * v->x, t * v->y, t * v->z);
 }
 
 vec3 vec3_divide_by_scalar(const vec3 *v, double t) {
@@ -89,14 +82,14 @@ vec3 vec3_divide_by_scalar(const vec3 *v, double t) {
 }
 
 double vec3_dot(const vec3 *u, const vec3 *v) {
-    return u->e[0] * v->e[0] + u->e[1] * v->e[1] + u->e[2] * v->e[2];
+    return u->x * v->x + u->y * v->y + u->z * v->z;
 }
 
 vec3 vec3_cross(const vec3 *u, const vec3 *v) {
     return vec3_create_values(
-        u->e[1] * v->e[2] - u->e[2] * v->e[1],
-        u->e[2] * v->e[0] - u->e[0] * v->e[2],
-        u->e[0] * v->e[1] - u->e[1] * v->e[0]
+        u->y * v->z - u->z * v->y,
+        u->z * v->x - u->x * v->z,
+        u->x * v->y - u->y * v->x
     );
 }
 

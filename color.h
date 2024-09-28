@@ -1,16 +1,16 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include <vec3.h>
+#include "vec3.h"
 
 //setting alias for vec3 as color
 typedef vec3 color;
 
 void write_color(FILE* out, const color pixel_color)
 {
-    float r = pixel_color.e[0];
-    float g = pixel_color.e[1];
-    float b = pixel_color.e[2];
+    float r = pixel_color.x;
+    float g = pixel_color.y;
+    float b = pixel_color.z;
 
     int r_byte = (int)(255.999 * r);
     int g_byte = (int)(255.999 * g);

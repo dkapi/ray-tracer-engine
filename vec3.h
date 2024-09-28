@@ -1,5 +1,5 @@
-#ifndef VEC3_H
-#define VEC3_H
+#ifndef _VEC3_H_
+#define _VEC3_H_
 
 #include <stdio.h>
 
@@ -9,9 +9,12 @@
     and i'd like to try in C
 */
 
+typedef struct vec3 vec3;
 
-typedef struct {
-    double e[3];
+typedef struct vec3{
+    double x;
+    double y;
+    double z;
 } vec3;
 
 // Constructors
@@ -46,4 +49,4 @@ double vec3_dot(const vec3 *u, const vec3 *v);
 vec3 vec3_cross(const vec3 *u, const vec3 *v);
 vec3 vec3_unit_vector(const vec3 *v);
 
-#endif
+#endif /* _VEC3_H_*/
