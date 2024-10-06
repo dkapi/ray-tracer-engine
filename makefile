@@ -5,10 +5,10 @@ CC = gcc
 CFLAGS = -Wall
 
 # Extra flags
-EXTRA_FLAGS = -lm 
+EXTRA_FLAGS = -lm -g
 
 # Source files
-SRC = main.c vec3.c ray.c
+SRC = main.c vec3.c ray.c hittable.c sphere.c darray/d_array.c
 
 # Object files
 OBJ = $(SRC:.c=.o)
