@@ -2,10 +2,10 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall
+CFLAGS = -Wall -ggdb
 
 # Extra flags
-EXTRA_FLAGS = -lm -g
+EXTRA_FLAGS = -lm 
 
 # Source files
 SRC = main.c vec3.c ray.c hittable.c sphere.c darray/d_array.c
