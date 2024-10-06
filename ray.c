@@ -14,3 +14,6 @@ vec3 ray_at(const ray_t* r, double t)
     return vec3_add_vec(&r->origin, &scaled_dir);
     
 }
+
+
+

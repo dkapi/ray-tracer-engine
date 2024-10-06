@@ -66,7 +66,7 @@ double vec3_length_squared(const vec3 *v) {
 
 // Utility functions
 void vec3_print(FILE *out, const vec3 *v) {
-    fprintf(out, "%f %f %f\n", v->x, v->z, v->z);
+    fprintf(out, "%f %f %f\n", v->x, v->y, v->z);
 }
 
 vec3 vec3_add_vec(const vec3 *u, const vec3 *v) {

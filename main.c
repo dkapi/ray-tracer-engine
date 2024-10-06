@@ -1,42 +1,47 @@
-#include <stdint.h>
-#include "vec3.h"
-#include "color.h"
 #include "ray.h"
+#include "color.h"
+#include "vec3.h"
+#include "hittable.h"
+#include "sphere.h"
+#include <stdio.h>
 
-#define X 1024
-#define Y 1024
+// ray color function
+color ray_color(const ray_t *r, const hittable_list *world) {
+    hit_record_t rec;
+    if (hittable_list_hit(world, r, 0, INFINITY, &rec)) {
+        vec3 tmp = vec3_create_values(1, 1, 1);
+        vec3 normal_color = vec3_add_vec(&tmp, &rec.normal);
+        return vec3_multiply_by_scalar(&normal_color, 0.5);
+    }
 
-#define R 0
-#define G 1
-#define B 2
-
-
-color ray_color(const ray_t* r) 
-{
-    vec3 unit_dir = vec3_unit_vector(&r->dir);
-    //blennding factor
-    double a = 0.5 * unit_dir.y + 1;
-    color white = {0,0,0};
-    color blue = {0.5, 0.7, 1.0};
-
-    color ret;
-    ret.x = (1.0 - a) * white.x + a * blue.x;
-    ret.y = (1.0 - a) * white.y + a * blue.y;
-    ret.z = (1.0 - a) * white.z + a * blue.z;
-    return ret;
+    vec3 unit_direction = vec3_unit_vector(&r->dir);
+    double t = 0.5 * (unit_direction.y + 1.0);
+    color white = vec3_create_values(1.0, 1.0, 1.0);
+    color blue = vec3_create_values(0.7, 0.5, 1.0);
+    color white_multi = vec3_multiply_by_scalar(&white, 1.0 - t);
+    color purp_multi = vec3_multiply_by_scalar(&blue, t);
+    return vec3_add_vec(&white_multi, &purp_multi);
 }
 
+int main() {
 
-int main(int argc, char *argv[])
-{
-    FILE *img;
-    int x, y;
-
+    // world
+    hittable_list *world = hittable_list_create();
+    
+    // figure out how to call this in a const param? maybe u cant? not sure
+    point3 center1 = vec3_create_values(0, 0, -1);
+    point3 center2 = vec3_create_values(0, -100.5, -1);
+    
+    sphere *s1 = sphere_create(&center1, 0.5);
+    sphere *s2 = sphere_create(&center2, 100);
+    
+    hittable_list_add(world, (hittable *)s1);
+    hittable_list_add(world, (hittable *)s2);
 
     //viewport/camera things
     //eventually port to own files
     double aspect_ratio = 16.0/9.0;
-    int image_width = 400;
+    int image_width = 1024;
 
     int image_height = (int) image_width / aspect_ratio;
     double focal_length = 1.0;
@@ -79,30 +84,38 @@ int main(int argc, char *argv[])
     vec3 half_pixel_delta = vec3_multiply_by_scalar(&pixel_delta_sum, 0.5);
     vec3 pixel00_loc = vec3_add_vec(&viewport_upper_left, &half_pixel_delta);
 
+    // Open file to write PPM image & write header
+    FILE *file = fopen("output.ppm", "w");
+    fprintf(file, "P3\n%d %d\n255\n", image_width, image_height);
 
+    // render loop
+    int x, y;
+    for (y = 0 ; y < image_height; y++) { // Loop from top to bottom
+        for (x = 0; x < image_width; ++x) {
+            // calculate pixel location and ray direction
+            vec3 pixel_loc = pixel00_loc;
+            // if image gets messed up, usually here
+            vec3 i_scaled = vec3_multiply_by_scalar(&pixel_delta_u, x);
+            vec3 j_scaled = vec3_multiply_by_scalar(&pixel_delta_v, y);
+            pixel_loc = vec3_add_vec(&pixel00_loc, &i_scaled);
+            pixel_loc = vec3_add_vec(&pixel_loc, &j_scaled);
 
+            // Compute the ray direction
+            vec3 ray_dir = vec3_subtract_vec(&pixel_loc, &camera_center);
+            ray_t r = ray_create(&camera_center, &ray_dir);
 
-    img = fopen("image.ppm", "w");
-    fprintf(img, "P3\n%d\n%d\n255\n",image_width   , image_height);
+            // Get the color of the ray
+            color pixel_color = ray_color(&r, world);
+            write_color(file, pixel_color);
 
-    for (y = 0; y < image_height; y++) {
-        for(x = 0; x < image_width; x++) {
-            vec3 temp_delta_u = vec3_multiply_by_scalar(&pixel_delta_u, y);
-            vec3 temp_delta_v = vec3_multiply_by_scalar(&pixel_delta_v, x); 
-
-            // Calculate the pixel center using the temporary variables
-            vec3 pixel_center = vec3_add_vec(&pixel00_loc, &temp_delta_u);
-            pixel_center = vec3_add_vec(&pixel_center, &temp_delta_v);
-
-            //calculate ray direction
-            vec3 ray_direction = vec3_subtract_vec(&pixel_center, &camera_center);
-            ray_t r = ray_create(&camera_center, &ray_direction);
-
-            color pixel_color = ray_color(&r);
-            write_color(img, pixel_color);
         }
     }
-    
-    return 0;
 
+    // Cleanup
+    fclose(file);
+    hittable_list_destroy(world);
+    free(s1);
+    free(s2);
+
+    return 0;
 }

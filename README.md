@@ -1,5 +1,6 @@
 # ray-tracer-engine
 
+<<<<<<< HEAD
 planned features:
 A camera with configurable position, orientation, and field of view
 Anti-aliasing
@@ -31,3 +32,18 @@ Parallelization
 Hybrid rendering with a GPU
 GPU acceleration
 Adaptive sampling
+=======
+completed features:
+
+- Camera with configurable position, orientation, and field of view
+- Ray/Sphere Intersection
+- hittible list of objects
+
+
+
+- TODO:
+- Ray/Triangle Intersection
+- Anti-Aliasing
+- Textured Spheres & Triangles
+- loading texture files
+>>>>>>> shapes
