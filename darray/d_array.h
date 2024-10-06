@@ -21,6 +21,6 @@ void* darray_get(darray *arr, int index);
 void darray_set(darray *arr, int index, void *element);
 void* darray_remove(darray *arr, int index);
 void darray_print(darray *arr);
-int darray_size(const darray *arr);  // Add this line for the size function
+int darray_size(const darray *arr);  // added this line for the size function
 
 #endif /* DARRAY_H */
