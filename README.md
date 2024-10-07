@@ -1,6 +1,6 @@
 # ray-tracer-engine
 
-completed features:
+## completed features:
 
 - Camera with configurable position, orientation, and field of view
 - Ray/Sphere Intersection
@@ -8,7 +8,7 @@ completed features:
 
 
 
-- TODO:
+## TODO:
 - Ray/Triangle Intersection
 - Anti-Aliasing
 - Textured Spheres & Triangles
