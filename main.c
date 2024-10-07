@@ -1,14 +1,9 @@
-#include "ray.h"
-#include "color.h"
-#include "vec3.h"
-#include "hittable.h"
-#include "sphere.h"
-#include <stdio.h>
+#include "engine.h"
 
 // ray color function
 color ray_color(const ray_t *r, const hittable_list *world) {
     hit_record_t rec;
-    if (hittable_list_hit(world, r, 0, INFINITY, &rec)) {
+    if (hittable_list_hit(world, r, interval_create(0, INFINITY), &rec)) {
         vec3 tmp = vec3_create_values(1, 1, 1);
         vec3 normal_color = vec3_add_vec(&tmp, &rec.normal);
         return vec3_multiply_by_scalar(&normal_color, 0.5);

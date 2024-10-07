@@ -12,7 +12,7 @@ typedef struct {
 } sphere;
 
 // sphere hit func
-int hit_sphere(const sphere *s, const ray_t *r, double tmin, double tmax, hit_record_t *rec);
+bool hit_sphere(const sphere *s, const ray_t *r, interval_t ray, hit_record_t *rec);
 // sphere constructor
 sphere* sphere_create(const point3 *center, double radius);
 
