@@ -1,6 +1,6 @@
 #include "ray.h"
 
-ray_t ray_create(vec3* origin, vec3* dir)
+ray_t ray_create(const vec3* origin, vec3* dir)
 {
     ray_t r;
     r.origin = *origin;

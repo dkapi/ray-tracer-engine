@@ -15,7 +15,7 @@ typedef struct ray_t{
     vec3 dir;
 }ray_t;
 
-ray_t ray_create(vec3* origin, vec3* dir);
+ray_t ray_create(const vec3* origin, vec3* dir);
 //returns the ray at the given point
 vec3 ray_at(const ray_t* r, double t);
 //color ray_color(const ray_t* r);
