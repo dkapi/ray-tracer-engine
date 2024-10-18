@@ -2,6 +2,7 @@
 #define COLOR_H
 
 #include "vec3.h"
+#include "interval.h"
 
 //setting alias for vec3 as color
 typedef vec3 color;

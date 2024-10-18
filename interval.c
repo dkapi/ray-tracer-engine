@@ -28,6 +28,16 @@ int interval_contains(const interval_t *i, double x) {
 }
 
 
-int interval_surrounds(const interval_t *i, double x) {
+bool interval_surrounds(const interval_t *i, double x) {
     return i->min < x && x < i->max;
+}
+
+double interval_clamp(const interval_t *i, double x) {
+    if(x < i->min) {
+        return i->min;
+    } 
+    else if(x > i->max) {
+        return  i->max;
+    }
+    return x;
 }

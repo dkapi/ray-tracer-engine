@@ -1,15 +1,17 @@
 #include "color.h"
 
+static const interval_t intensity = {.min = 0.000, .max = 0.999};
 
 void write_color(FILE* out, const color pixel_color)
 {
-    float r = pixel_color.x;
-    float g = pixel_color.y;
-    float b = pixel_color.z;
+    double r = pixel_color.x;
+    double g = pixel_color.y;
+    double b = pixel_color.z;
 
-    int r_byte = (int)(255.999 * r);
-    int g_byte = (int)(255.999 * g);
-    int b_byte = (int)(255.999 * b);
+    int r_byte = (int)(256 * interval_clamp(&intensity, r));
+    int g_byte = (int)(256 * interval_clamp(&intensity, g));
+    int b_byte = (int)(256 * interval_clamp(&intensity, b));
+
 
     fprintf(out, "%d %d %d\n", r_byte, g_byte, b_byte);
 }

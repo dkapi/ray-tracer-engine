@@ -14,7 +14,7 @@ SRC = main.c vec3.c ray.c hittable.c sphere.c darray/d_array.c interval.c camera
 OBJ = $(SRC:.c=.o)
 
 # Output executable
-TARGET = main
+TARGET = engine
 
 # Default target
 all: $(TARGET)

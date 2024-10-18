@@ -1,27 +1,31 @@
 #include "camera.h"
 
-camera_t* camera_initialize()
-{
-    camera_t* c = (camera_t*)malloc(sizeof(camera_t));
-    c->aspect_ratio = ASPECT_RATIO;
-    c->image_width = I_WIDTH;
-    int image_height = (int) I_WIDTH / (ASPECT_RATIO);
-    c->image_height = image_height;
-    c->focal_length = FOCAL_LENGHT;
-    c->viewport_height = VIEWPORT_HEIGHT;
-    double viewport_h = VIEWPORT_HEIGHT * (double) I_WIDTH / (I_HEIGHT);
-    c->viewport_width = viewport_h;
-    c->camera_center = vec3_create_values(0,0,0);
+void camera_initialize(camera_t* c) {
+    // Ensure image height calculation is proper and avoid unintended integer division.
+    c->image_height = (int)(c->image_width / (c->aspect_ratio));
+    c->image_height = (c->image_height < 1) ? 1 : c->image_height;
+
+    // Set up viewport dimensions
+    c->viewport_height = 2.0;
+    c->viewport_width  = c->viewport_height * (double) c->image_width / c->image_height;
+
+    // Set the scale factor for samples
+    if (c->samples_per_pixel <= 0) {
+        c->samples_per_pixel = 1; 
+    }
+    c->pixel_samples_scale = 1.0 / c->samples_per_pixel;
+
+    // Set camera properties
+    c->camera_center = vec3_create_values(0, 0, 0);
     c->viewport_u = vec3_create_values(c->viewport_width, 0, 0);
     c->viewport_v = vec3_create_values(0, -c->viewport_height, 0);
 
-    //calc the horizontal and vertical delta vectors from pixel to pixel
-    vec3 pixel_delta_u = vec3_divide_by_scalar(&c->viewport_u, (I_WIDTH));
-    vec3 pixel_delta_v = vec3_divide_by_scalar(&c->viewport_v, I_HEIGHT);
-    
-    
-    //calc the location of upper left pixel
-    vec3 focal_length_vec = vec3_create_values(0, 0, FOCAL_LENGHT);
+    // Calculate the horizontal and vertical delta vectors from pixel to pixel
+    c->pixel_delta_u = vec3_divide_by_scalar(&c->viewport_u, c->image_width);
+    c->pixel_delta_v = vec3_divide_by_scalar(&c->viewport_v, c->image_height);
+
+    // Calculate the location of the upper left pixel
+    vec3 focal_length_vec = vec3_create_values(0, 0, c->focal_length);
     vec3 temp = vec3_subtract_vec(&c->camera_center, &focal_length_vec);
 
     vec3 half_viewport_u = vec3_multiply_by_scalar(&c->viewport_u, 0.5);
@@ -29,60 +33,80 @@ camera_t* camera_initialize()
     vec3 viewport_upper_left = vec3_subtract_vec(&temp, &half_viewport_u);
     viewport_upper_left = vec3_subtract_vec(&viewport_upper_left, &half_viewport_v);
 
-    vec3 pixel_delta_sum = vec3_add_vec(&pixel_delta_u, &pixel_delta_v);
+    vec3 pixel_delta_sum = vec3_add_vec(&c->pixel_delta_u, &c->pixel_delta_v);
     vec3 half_pixel_delta = vec3_multiply_by_scalar(&pixel_delta_sum, 0.5);
-    vec3 pixel00_loc = vec3_add_vec(&viewport_upper_left, &half_pixel_delta);
-
-    c->pixel_delta_u = pixel_delta_u;
-    c->pixel_delta_v = pixel_delta_v;
-    c->pixel_00_loc = pixel00_loc;
-
-    return c;
+    c->pixel_00_loc = vec3_add_vec(&viewport_upper_left, &half_pixel_delta);
 }
 
+    // returns a random real in [0,1).
+static inline double random_double() {
+    return rand() / (RAND_MAX + 1.0);
+}
 
 // ray color function
 color ray_color(const ray_t *r, const hittable_list *world) {
     hit_record_t rec;
-    if (hittable_list_hit(world, r, interval_create(0, INFINITY), &rec)) {
-        vec3 tmp = vec3_create_values(1, 1, 1);
-        vec3 normal_color = vec3_add_vec(&tmp, &rec.normal);
+    
+    // Check if the ray hits anything in the world
+    if (hittable_list_hit(world, r, interval_create(0.001, INFINITY), &rec)) {
+        // Shift normal to the [0, 1] range for coloring
+        vec3 normal_color = vec3_create_values(rec.normal.x + 1.0, rec.normal.y + 1.0, rec.normal.z + 1.0);
         return vec3_multiply_by_scalar(&normal_color, 0.5);
     }
 
+    // background gradient 
     vec3 unit_direction = vec3_unit_vector(&r->dir);
     double t = 0.5 * (unit_direction.y + 1.0);
+    
     color white = vec3_create_values(1.0, 1.0, 1.0);
     color blue = vec3_create_values(0.7, 0.5, 1.0);
-    color white_multi = vec3_multiply_by_scalar(&white, 1.0 - t);
-    color purp_multi = vec3_multiply_by_scalar(&blue, t);
-    return vec3_add_vec(&white_multi, &purp_multi);
+
+    // Linear blend between white and blue based on t for background
+    color white_scaled = vec3_multiply_by_scalar(&white, 1.0 - t);
+    color blue_scaled = vec3_multiply_by_scalar(&blue, t);
+    color blended = vec3_add_vec(&white_scaled, &blue_scaled);
+    return blended;
 }
 
 
-void render(const camera_t* camera, hittable_list* world, FILE* img)
-{
-    int x, y;
-    for (y = 0 ; y < camera->image_height; y++) { // Loop from top to bottom
-        for (x = 0; x < camera->image_width; ++x) {
-            // calculate pixel location and ray direction
-            vec3 pixel_loc = camera->pixel_00_loc;
-            // if image gets messed up, usually here
-            vec3 i_scaled = vec3_multiply_by_scalar(&camera->pixel_delta_u, x);
-            vec3 j_scaled = vec3_multiply_by_scalar(&camera->pixel_delta_v, y);
-            pixel_loc = vec3_add_vec(&camera->pixel_00_loc, &i_scaled);
-            pixel_loc = vec3_add_vec(&pixel_loc, &j_scaled);
+// returns the vector to a random point in the [-.5, -.5]-[+.5, +.5] unit square.
+// for anti-aliasing
+vec3 sample_square() {
+    return vec3_create_values(random_double() - 0.5, random_double() - 0.5, 0.0);
+}
 
-            // Compute the ray direction
-            vec3 ray_dir = vec3_subtract_vec(&pixel_loc, &camera->camera_center);
-            ray_t r = ray_create(&camera->camera_center, &ray_dir);
+// constructs a ray originating from the camera center and directed at a sampled point near pixel i, j
+ray_t get_ray(const camera_t* camera, int i, int j) {
+    vec3 offset = sample_square();
 
-            // Get the color of the ray
-            color pixel_color = ray_color(&r, world);
+    // calculate the sampled pixel location
+    vec3 i_scaled = vec3_multiply_by_scalar(&camera->pixel_delta_u, (double)(i) + offset.x);
+    vec3 j_scaled = vec3_multiply_by_scalar(&camera->pixel_delta_v, (double)(j) + offset.y);
+    vec3 pixel_sample = vec3_add_vec(&camera->pixel_00_loc, &i_scaled);
+    pixel_sample = vec3_add_vec(&pixel_sample, &j_scaled);
+
+    // compute the ray direction
+    vec3 ray_direction = vec3_subtract_vec(&pixel_sample, &camera->camera_center);
+    return ray_create(&camera->camera_center, &ray_direction);
+}
+
+void render(const camera_t* camera, hittable_list* world, FILE* img) {
+    int x, y, sample;
+    fprintf(img, "P3\n%d %d\n255\n", camera->image_width, camera->image_height);
+
+    for (y = 0; y < camera->image_height; y++) {
+        for (x = 0; x < camera->image_width; x++) {
+            // accumulate color for each pixel by sampling multiple times
+            color pixel_color = vec3_create_values(0, 0, 0);
+            for (sample = 0; sample < camera->samples_per_pixel; ++sample) {
+                ray_t r = get_ray(camera, x, y);
+
+                color ray_col = ray_color(&r, world);
+                pixel_color = vec3_add_vec(&pixel_color, &ray_col);
+            }
+
+            pixel_color = vec3_multiply_by_scalar(&pixel_color, camera->pixel_samples_scale);
             write_color(img, pixel_color);
-
         }
     }
-
-
 }

@@ -3,12 +3,19 @@
 
 int main() {
 
-    // Open file to write PPM image & write header
-    FILE *img = fopen("output.ppm", "w");
-    fprintf(img, "P3\n%d %d\n255\n", (int)I_WIDTH, (int)I_HEIGHT);
 
     // camera
-    camera_t* camera = camera_initialize();
+    camera_t camera = {0};
+
+    camera.aspect_ratio = (16.0 / 9.0);
+    camera.image_width = 1024;
+    camera.focal_length = 1.0; // prolly make 1 default
+    camera.samples_per_pixel = 10; // samples 10 is pretty good as well and quickeer, dont go higher than 100 i think
+    camera_initialize(&camera);
+
+
+    // Open file to write PPM image & write header
+    FILE *img = fopen("output.ppm", "wb");
 
 
     // figure out how to call this in a const param? maybe u cant? not sure
@@ -23,7 +30,7 @@ int main() {
     hittable_list_add(world, (hittable *)s2);
 
     // render loop
-    render(camera, world, img);
+    render(&camera, world, img);
 
 
     // Cleanup
