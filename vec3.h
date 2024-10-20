@@ -30,7 +30,6 @@ double vec3_z(const vec3 *v);
 
 // Operator functions
 vec3 vec3_negate(const vec3 *v);
-void vec3_add(vec3 *u, const vec3 *v);
 void vec3_multiply_scalar(vec3 *v, double t);
 void vec3_divide_scalar(vec3 *v, double t);
 
@@ -39,10 +38,10 @@ double vec3_length(const vec3 *v);
 double vec3_length_squared(const vec3 *v);
 
 // Utility functions
-void vec3_print(FILE *out, const vec3 *v);
-vec3 vec3_add_vec(const vec3 *u, const vec3 *v);
-vec3 vec3_subtract_vec(const vec3 *u, const vec3 *v);
-vec3 vec3_multiply_vec(const vec3 *u, const vec3 *v);
+void vec3_print(const vec3 *v);
+vec3 vec3_add(const vec3 *u, const vec3 *v);
+vec3 vec3_subtract(const vec3 *u, const vec3 *v);
+vec3 vec3_multiply(const vec3 *u, const vec3 *v);
 vec3 vec3_multiply_by_scalar(const vec3 *v, double t);
 vec3 vec3_divide_by_scalar(const vec3 *v, double t);
 double vec3_dot(const vec3 *u, const vec3 *v);

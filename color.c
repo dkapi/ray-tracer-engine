@@ -2,16 +2,12 @@
 
 static const interval_t intensity = {.min = 0.000, .max = 0.999};
 
-void write_color(FILE* out, const color pixel_color)
-{
-    double r = pixel_color.x;
-    double g = pixel_color.y;
-    double b = pixel_color.z;
+void write_color(FILE* out, const color pixel_color) {
+    unsigned char r_byte = (unsigned char)(256 * interval_clamp(&intensity, pixel_color.x));
+    unsigned char g_byte = (unsigned char)(256 * interval_clamp(&intensity, pixel_color.y));
+    unsigned char b_byte = (unsigned char)(256 * interval_clamp(&intensity, pixel_color.z));
 
-    int r_byte = (int)(256 * interval_clamp(&intensity, r));
-    int g_byte = (int)(256 * interval_clamp(&intensity, g));
-    int b_byte = (int)(256 * interval_clamp(&intensity, b));
-
-
-    fprintf(out, "%d %d %d\n", r_byte, g_byte, b_byte);
+    fwrite(&r_byte, 1, 1, out);
+    fwrite(&g_byte, 1, 1, out);
+    fwrite(&b_byte, 1, 1, out);
 }

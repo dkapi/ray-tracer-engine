@@ -26,16 +26,16 @@ void camera_initialize(camera_t* c) {
 
     // Calculate the location of the upper left pixel
     vec3 focal_length_vec = vec3_create_values(0, 0, c->focal_length);
-    vec3 temp = vec3_subtract_vec(&c->camera_center, &focal_length_vec);
+    vec3 temp = vec3_subtract(&c->camera_center, &focal_length_vec);
 
     vec3 half_viewport_u = vec3_multiply_by_scalar(&c->viewport_u, 0.5);
     vec3 half_viewport_v = vec3_multiply_by_scalar(&c->viewport_v, 0.5);
-    vec3 viewport_upper_left = vec3_subtract_vec(&temp, &half_viewport_u);
-    viewport_upper_left = vec3_subtract_vec(&viewport_upper_left, &half_viewport_v);
+    vec3 viewport_upper_left = vec3_subtract(&temp, &half_viewport_u);
+    viewport_upper_left = vec3_subtract(&viewport_upper_left, &half_viewport_v);
 
-    vec3 pixel_delta_sum = vec3_add_vec(&c->pixel_delta_u, &c->pixel_delta_v);
+    vec3 pixel_delta_sum = vec3_add(&c->pixel_delta_u, &c->pixel_delta_v);
     vec3 half_pixel_delta = vec3_multiply_by_scalar(&pixel_delta_sum, 0.5);
-    c->pixel_00_loc = vec3_add_vec(&viewport_upper_left, &half_pixel_delta);
+    c->pixel_00_loc = vec3_add(&viewport_upper_left, &half_pixel_delta);
 }
 
     // returns a random real in [0,1).
@@ -64,7 +64,7 @@ color ray_color(const ray_t *r, const hittable_list *world) {
     // Linear blend between white and blue based on t for background
     color white_scaled = vec3_multiply_by_scalar(&white, 1.0 - t);
     color blue_scaled = vec3_multiply_by_scalar(&blue, t);
-    color blended = vec3_add_vec(&white_scaled, &blue_scaled);
+    color blended = vec3_add(&white_scaled, &blue_scaled);
     return blended;
 }
 
@@ -82,17 +82,39 @@ ray_t get_ray(const camera_t* camera, int i, int j) {
     // calculate the sampled pixel location
     vec3 i_scaled = vec3_multiply_by_scalar(&camera->pixel_delta_u, (double)(i) + offset.x);
     vec3 j_scaled = vec3_multiply_by_scalar(&camera->pixel_delta_v, (double)(j) + offset.y);
-    vec3 pixel_sample = vec3_add_vec(&camera->pixel_00_loc, &i_scaled);
-    pixel_sample = vec3_add_vec(&pixel_sample, &j_scaled);
+    vec3 pixel_sample = vec3_add(&camera->pixel_00_loc, &i_scaled);
+    pixel_sample = vec3_add(&pixel_sample, &j_scaled);
 
     // compute the ray direction
-    vec3 ray_direction = vec3_subtract_vec(&pixel_sample, &camera->camera_center);
+    vec3 ray_direction = vec3_subtract(&pixel_sample, &camera->camera_center);
     return ray_create(&camera->camera_center, &ray_direction);
+}
+
+void display_progress(int completed, int total) {
+    int bar_width = 70;
+
+    double progress = (double)completed / (double)total;
+
+    printf("\r[");
+    int pos = bar_width * progress;
+    for (int i = 0; i < bar_width; ++i) {
+        if (i < pos) {
+            printf("=");
+        } else if (i == pos) {
+            printf(">");
+        } else {
+            printf(" ");
+        }
+    }
+    printf("] %d%%", (int)(progress * 100));
+
+    fflush(stdout);
 }
 
 void render(const camera_t* camera, hittable_list* world, FILE* img) {
     int x, y, sample;
-    fprintf(img, "P3\n%d %d\n255\n", camera->image_width, camera->image_height);
+    int total_pixels = camera->image_height * camera->image_width;
+    fprintf(img, "P6\n%d %d\n255\n", camera->image_width, camera->image_height);
 
     for (y = 0; y < camera->image_height; y++) {
         for (x = 0; x < camera->image_width; x++) {
@@ -102,11 +124,19 @@ void render(const camera_t* camera, hittable_list* world, FILE* img) {
                 ray_t r = get_ray(camera, x, y);
 
                 color ray_col = ray_color(&r, world);
-                pixel_color = vec3_add_vec(&pixel_color, &ray_col);
+                pixel_color = vec3_add(&pixel_color, &ray_col);
             }
 
             pixel_color = vec3_multiply_by_scalar(&pixel_color, camera->pixel_samples_scale);
             write_color(img, pixel_color);
+
+            //progress bar
+            int completed_pixels = (y * camera->image_width) + x + 1;
+            if (completed_pixels % (total_pixels / 100) == 0) {
+            display_progress(completed_pixels, total_pixels);
+            }
         }
     }
+    display_progress(total_pixels, total_pixels);
+    printf("\n");
 }
