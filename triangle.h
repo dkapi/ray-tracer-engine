@@ -6,7 +6,7 @@
 
 
 typedef struct triangle {
-    hittable base; // Ensure this is first
+    hittable base; // make sure to always have base struct first
     point3 a, b, c;
 } triangle_t;
 
