@@ -6,10 +6,9 @@
 - Ray/Sphere Intersection
 - hittible list of objects
 - Anti-Aliasing
-
+- Ray/Triangle Intersection
 
 ## TODO:
-- Ray/Triangle Intersection
 - Textured Spheres & Triangles
 - loading texture files
 - convert hittible list to a BVH
