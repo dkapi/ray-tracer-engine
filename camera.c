@@ -1,57 +1,85 @@
 #include "camera.h"
 
+static inline double degrees_to_radians(double degrees) {
+    return degrees * PI / 180.0;
+}
+
 void camera_initialize(camera_t* c) {
-    // Ensure image height calculation is proper and avoid unintended integer division.
     c->image_height = (int)(c->image_width / (c->aspect_ratio));
     c->image_height = (c->image_height < 1) ? 1 : c->image_height;
 
-    // Set up viewport dimensions
-    c->viewport_height = 2.0;
-    c->viewport_width  = c->viewport_height * (double) c->image_width / c->image_height;
-
-    // Set the scale factor for samples
+    // sample scale factor
     if (c->samples_per_pixel <= 0) {
         c->samples_per_pixel = 1; 
     }
     c->pixel_samples_scale = 1.0 / c->samples_per_pixel;
 
-    // Set camera properties
-    c->camera_center = vec3_create_values(0, 0, 0);
-    c->viewport_u = vec3_create_values(c->viewport_width, 0, 0);
-    c->viewport_v = vec3_create_values(0, -c->viewport_height, 0);
+    // cam position and cam frame vectors
+    c->camera_center = c->lookfrom;
+
+    // Calculate focal length
+    vec3 temp_sub = vec3_subtract(&c->lookfrom, &c->lookat);
+    c->focal_length = vec3_length(&temp_sub);
+
+    double theta = degrees_to_radians(c->vfov);
+    double h = tan(theta / 2.0);
+
+    // Set viewport dimensions based on focus distance
+    c->viewport_height = 2 * h * c->focus_dist;
+    c->viewport_width = c->viewport_height * ((double) c->image_width / c->image_height);
+
+    // Calculate camera frame basis vectors
+    c->w = vec3_unit_vector(&temp_sub);
+    vec3 crosstmp = vec3_cross(&c->vup, &c->w);
+    c->u = vec3_unit_vector(&crosstmp);
+    c->v = vec3_cross(&c->w, &c->u);
+
+    // Calculate the vectors across the horizontal and down the vertical viewport edges
+    c->viewport_u = vec3_multiply_by_scalar(&c->u, c->viewport_width);
+    c->viewport_v = vec3_multiply_by_scalar(&c->v, c->viewport_height);
 
     // Calculate the horizontal and vertical delta vectors from pixel to pixel
     c->pixel_delta_u = vec3_divide_by_scalar(&c->viewport_u, c->image_width);
     c->pixel_delta_v = vec3_divide_by_scalar(&c->viewport_v, c->image_height);
 
     // Calculate the location of the upper left pixel
-    vec3 focal_length_vec = vec3_create_values(0, 0, c->focal_length);
-    vec3 temp = vec3_subtract(&c->camera_center, &focal_length_vec);
-
-    vec3 half_viewport_u = vec3_multiply_by_scalar(&c->viewport_u, 0.5);
-    vec3 half_viewport_v = vec3_multiply_by_scalar(&c->viewport_v, 0.5);
-    vec3 viewport_upper_left = vec3_subtract(&temp, &half_viewport_u);
-    viewport_upper_left = vec3_subtract(&viewport_upper_left, &half_viewport_v);
+    vec3 focal_length_vec = vec3_multiply_by_scalar(&c->w, c->focus_dist);
+    vec3 viewport_upper_left = vec3_subtract(&c->camera_center, &focal_length_vec);
+    vec3 divide_temp1 = vec3_divide_by_scalar(&c->viewport_u, 2);
+    viewport_upper_left = vec3_subtract(&viewport_upper_left, &divide_temp1);
+    vec3 divide_temp2 = vec3_divide_by_scalar(&c->viewport_v, 2);
+    viewport_upper_left = vec3_subtract(&viewport_upper_left, &divide_temp2);
 
     vec3 pixel_delta_sum = vec3_add(&c->pixel_delta_u, &c->pixel_delta_v);
     vec3 half_pixel_delta = vec3_multiply_by_scalar(&pixel_delta_sum, 0.5);
     c->pixel_00_loc = vec3_add(&viewport_upper_left, &half_pixel_delta);
-}
 
-    // returns a random real in [0,1).
-static inline double random_double() {
-    return rand() / (RAND_MAX + 1.0);
-}
+    // Calculate defocus disk basis vectors
+    double defocus_radius = c->focus_dist * tan(degrees_to_radians(c->defocus_angle / 2.0));
+    c->defocus_disk_u = vec3_multiply_by_scalar(&c->u, defocus_radius);
+    c->defocus_disk_v = vec3_multiply_by_scalar(&c->v, defocus_radius);
+} 
 
 // ray color function
-color ray_color(const ray_t *r, const hittable_list *world) {
+color ray_color(const ray_t *r, int depth ,const hittable_list *world) {
+    //max depth check
+    if(depth <= 0) {
+        return vec3_create_values(0,0,0);
+    }
+
     hit_record_t rec;
     
     // Check if the ray hits anything in the world
     if (hittable_list_hit(world, r, interval_create(0.001, INFINITY), &rec)) {
-        // Shift normal to the [0, 1] range for coloring
-        vec3 normal_color = vec3_create_values(rec.normal.x + 1.0, rec.normal.y + 1.0, rec.normal.z + 1.0);
-        return vec3_multiply_by_scalar(&normal_color, 0.5);
+        ray_t scattered;
+        color attenuation;
+
+        if (rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered)) {
+            color scattered_color = ray_color(&scattered, depth -1, world);
+            return vec3_multiply(&attenuation, &scattered_color);
+        }
+
+        return vec3_create_values(0, 0, 0);
     }
 
     // background gradient 
@@ -75,6 +103,14 @@ vec3 sample_square() {
     return vec3_create_values(random_double() - 0.5, random_double() - 0.5, 0.0);
 }
 
+static point3 defocus_disk_sample(const camera_t* camera) {
+    vec3 p = random_in_unit_disk();
+    vec3 scaled_u = vec3_multiply_by_scalar(&camera->defocus_disk_u, p.x);
+    vec3 scaled_v = vec3_multiply_by_scalar(&camera->defocus_disk_v, p.y);
+    vec3 temp = vec3_add(&scaled_u, &scaled_v);
+    return vec3_add(&camera->camera_center, &temp);
+}
+
 // constructs a ray originating from the camera center and directed at a sampled point near pixel i, j
 ray_t get_ray(const camera_t* camera, int i, int j) {
     vec3 offset = sample_square();
@@ -85,8 +121,13 @@ ray_t get_ray(const camera_t* camera, int i, int j) {
     vec3 pixel_sample = vec3_add(&camera->pixel_00_loc, &i_scaled);
     pixel_sample = vec3_add(&pixel_sample, &j_scaled);
 
-    // compute the ray direction
-    vec3 ray_direction = vec3_subtract(&pixel_sample, &camera->camera_center);
+    vec3 ray_origin;
+    if (camera->defocus_angle <= 0) {
+        ray_origin = camera->camera_center;
+    } else {
+        ray_origin = defocus_disk_sample(camera);
+    }
+    vec3 ray_direction = vec3_subtract(&pixel_sample, &ray_origin);
     return ray_create(&camera->camera_center, &ray_direction);
 }
 
@@ -116,14 +157,15 @@ void render(const camera_t* camera, hittable_list* world, FILE* img) {
     int total_pixels = camera->image_height * camera->image_width;
     fprintf(img, "P6\n%d %d\n255\n", camera->image_width, camera->image_height);
 
-    for (y = 0; y < camera->image_height; y++) {
+    //rendering backwards rn cause somehow i made my images backwards idk man
+    for (y = camera->image_height - 1; y >= 0; y--) {
         for (x = 0; x < camera->image_width; x++) {
             // accumulate color for each pixel by sampling multiple times
             color pixel_color = vec3_create_values(0, 0, 0);
             for (sample = 0; sample < camera->samples_per_pixel; ++sample) {
                 ray_t r = get_ray(camera, x, y);
 
-                color ray_col = ray_color(&r, world);
+                color ray_col = ray_color(&r, camera->max_depth, world);
                 pixel_color = vec3_add(&pixel_color, &ray_col);
             }
 

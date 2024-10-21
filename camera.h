@@ -8,15 +8,25 @@
 
 
 typedef struct {
-    double aspect_ratio;
     int image_width;
     int image_height;
+    int max_depth;             // for recursive call in ray_color
+    int samples_per_pixel;
+    double aspect_ratio;
     double viewport_height;
     double viewport_width;
     double focal_length;
-    int samples_per_pixel;
+    double vfov;                // vertical field of view angle
     double pixel_samples_scale; // scale for color based on samples
+    double defocus_angle;
+    double focus_dist;
+    point3 lookfrom;
+    point3 lookat;
     point3 camera_center;
+    vec3 defocus_disk_u;
+    vec3 defocus_disk_v;
+    vec3 vup;
+    vec3 u, v, w;
     vec3 viewport_u;
     vec3 viewport_v;
     vec3 pixel_delta_u;
@@ -26,7 +36,7 @@ typedef struct {
 
 void camera_initialize(camera_t* c);
 void render(const camera_t* camera, hittable_list* world, FILE* img);
-color ray_color(const ray_t *r, const hittable_list *world);
+color ray_color(const ray_t *r, int depth, const hittable_list *world);
 ray_t get_ray(const camera_t* camera, int i, int j);
 vec3 sample_square();
 

@@ -8,7 +8,7 @@ CFLAGS = -Wall -ggdb
 EXTRA_FLAGS = -lm 
 
 # Source files
-SRC = main.c vec3.c ray.c hittable.c sphere.c triangle.c darray/d_array.c interval.c camera.c color.c
+SRC = main.c vec3.c ray.c hittable.c sphere.c triangle.c darray/d_array.c interval.c camera.c color.c material.c
 
 # Object files
 OBJ = $(SRC:.c=.o)

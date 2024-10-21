@@ -3,13 +3,12 @@
 
 
 // Sphere constructor
-sphere* sphere_create(const point3 *center, double radius) {
+sphere* sphere_create(const point3 *center, double radius,  material_t* mat) {
     sphere *s = (sphere *)malloc(sizeof(sphere));
-    if (s) {
         s->center = *center;
         s->radius = radius;
+        s->mat = mat;
         s->base.hit = (hit_fn)hit_sphere;  // assign hit function pointer
-    }
     return s;
 }
 
@@ -43,6 +42,7 @@ bool hit_sphere(const sphere *s, const ray_t *r, interval_t ray, hit_record_t *r
     vec3 outward_normal = vec3_divide_by_scalar(&tmp, s->radius);
     rec->normal = outward_normal;
     set_face_normal(rec, r, &outward_normal);
+    rec->mat = s->mat;
 
     return true;
 }

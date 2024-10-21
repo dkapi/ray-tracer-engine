@@ -1,74 +1,93 @@
 #include "engine.h"
 
-
 int main() {
-
 
     // camera
     camera_t camera = {0};
 
-    camera.aspect_ratio = (16.0 / 9.0);
-    camera.image_width = 2556;
-    camera.focal_length = 1; // prolly make 1 default
-    camera.samples_per_pixel = 500; // samples 10 is pretty good as well and quickeer, dont go higher than 100 i think
+    camera.aspect_ratio     = (16.0 / 9.0);
+    camera.image_width      = 2560;
+    camera.samples_per_pixel= 500; // samples 10 is pretty good as well and quickeer, dont go higher than 100 i think
+    camera.max_depth        = 50;
+    camera.defocus_angle    = 0.6;
+    camera.focus_dist       = 10.0;
+    camera.vfov             = 20;
+    camera.lookfrom         = vec3_create_values(13,2,3);
+    camera.lookat           = vec3_create_values(0,0,0);
+    camera.vup              = vec3_create_values(0,1,0);
     camera_initialize(&camera);
 
 
     // Open file to write PPM image & write header
     FILE *img = fopen("output.ppm", "wb");
 
-
-    // World (hittable list)
+// Create hittable list (world)
     hittable_list *world = hittable_list_create();
 
-    // Add first sphere
-    point3 center1 = vec3_create_values(1.5, 0.5, -2);
-    sphere *s1 = sphere_create(&center1, 0.5);
-    hittable_list_add(world, (hittable *)s1);
+    // Ground material and sphere
+    color ground_color = vec3_create_values(0.5, 0.5, 0.5);
+    material_t *ground_material = (material_t *)create_lambertian(&ground_color);
+    point3 ground_center = vec3_create_values(0, -1000, 0);
+    sphere *ground_sphere = sphere_create(&ground_center, 1000.0, ground_material);
+    hittable_list_add(world, (hittable *)ground_sphere);
 
-    // Add additional spheres around the scene
-    point3 center2 = vec3_create_values(-2.0, 0.5, -4.0);
-    sphere *s2 = sphere_create(&center2, 0.7);
-    hittable_list_add(world, (hittable *)s2);
+    // Generate small spheres randomly in the scene
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            double choose_mat = random_double();
+            point3 center = vec3_create_values(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
 
-    point3 center3 = vec3_create_values(0.0, -0.5, -3.5);
-    sphere *s3 = sphere_create(&center3, 1.0);
-    hittable_list_add(world, (hittable *)s3);
+            vec3 create = vec3_create_values(4, 0.2, 0);
+            vec3 temp_sub = vec3_subtract(&center, &create);
+            if (vec3_length(&temp_sub) > 0.9) {
+                material_t *sphere_material;
 
-    point3 center4 = vec3_create_values(3.0, -1.0, -6.0);
-    sphere *s4 = sphere_create(&center4, 1.5);
-    hittable_list_add(world, (hittable *)s4);
+                if (choose_mat < 0.8) {
+                    // Diffuse material
+                    vec3 random1 = vec3_random();
+                    vec3 random2 = vec3_random();
+                    color albedo = vec3_multiply(&random1, &random2);
+                    sphere_material = (material_t *)create_lambertian(&albedo);
+                } else if (choose_mat < 0.95) {
+                    // Metal material
+                    color albedo = vec3_random_values(0.5, 1.0);
+                    double fuzz = random_double_with_params(0, 0.5);
+                    sphere_material = (material_t *)create_metal(&albedo, fuzz);
+                } else {
+                    // Glass material
+                    sphere_material = (material_t *)create_dielectric(1.5);
+                }
 
-    // Add first triangle
-    point3 tri_a1 = vec3_create_values(-1.0, 0.0, -5.0);
-    point3 tri_b1 = vec3_create_values(1.0, 0.0, -5.0);
-    point3 tri_c1 = vec3_create_values(0.0, 1.0, -5.0);
-    triangle_t *t1 = create_triangle(&tri_a1, &tri_b1, &tri_c1);
-    hittable_list_add(world, (hittable *)t1);
+                sphere *small_sphere = sphere_create(&center, 0.2, sphere_material);
+                hittable_list_add(world, (hittable *)small_sphere);
+            }
+        }
+    }
 
-    // Add additional triangles around the scene
-    point3 tri_a2 = vec3_create_values(2.0, -1.0, -6.0);
-    point3 tri_b2 = vec3_create_values(3.5, -1.0, -6.0);
-    point3 tri_c2 = vec3_create_values(2.75, 1.0, -6.0);
-    triangle_t *t2 = create_triangle(&tri_a2, &tri_b2, &tri_c2);
-    hittable_list_add(world, (hittable *)t2);
+    // Add three large spheres with different materials
+    material_t *material1 = (material_t *)create_dielectric(1.5);
+    point3 center1 = vec3_create_values(0, 1, 0);
+    sphere *sphere1 = sphere_create(&center1, 1.0, material1);
+    hittable_list_add(world, (hittable *)sphere1);
 
-    point3 tri_a3 = vec3_create_values(-3.0, -1.5, -7.0);
-    point3 tri_b3 = vec3_create_values(-1.0, -1.5, -7.0);
-    point3 tri_c3 = vec3_create_values(-2.0, 0.5, -7.0);
-    triangle_t *t3 = create_triangle(&tri_a3, &tri_b3, &tri_c3);
-    hittable_list_add(world, (hittable *)t3);
+    color color2 = vec3_create_values(0.4, 0.2, 0.1);
+    material_t *material2 = (material_t *)create_lambertian(&color2);
+    point3 center2 = vec3_create_values(-4, 1, 0);
+    sphere *sphere2 = sphere_create(&center2, 1.0, material2);
+    hittable_list_add(world, (hittable *)sphere2);
 
-    // render loop
+    color color3 = vec3_create_values(0.7, 0.6, 0.5);
+    material_t *material3 = (material_t *)create_metal(&color3, 0.0);
+    point3 center3 = vec3_create_values(4, 1, 0);
+    sphere *sphere3 = sphere_create(&center3, 1.0, material3);
+    hittable_list_add(world, (hittable *)sphere3);
+
+    // Render loop
     render(&camera, world, img);
-
 
     // Cleanup
     fclose(img);
     hittable_list_destroy(world);
-    free(t1);
-    // free(s1);
-    // free(s2);
 
     return 0;
 }

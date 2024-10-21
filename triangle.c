@@ -4,12 +4,13 @@
 
 
 
-triangle_t* create_triangle(const point3* a, const point3* b, const point3* c) {
+triangle_t* create_triangle(const point3* a, const point3* b, const point3* c, material_t* mat) {
     triangle_t* triangle = (triangle_t*)malloc(sizeof(triangle_t));
     
     triangle->a = *a;
     triangle->b = *b;
     triangle->c = *c;
+    triangle->mat = mat;
     triangle->base.hit = (hit_fn)hit_triangle;  // Assign hit function pointer
 
     return triangle;
@@ -63,6 +64,7 @@ bool hit_triangle(const triangle_t* tri, const ray_t* r, interval_t ray, hit_rec
     vec3 outward_normal = vec3_cross(&edge1, &edge2);
     outward_normal = vec3_unit_vector(&outward_normal);
     set_face_normal(rec, r, &outward_normal);
+    rec->mat = tri->mat;
 
     return true;
 }

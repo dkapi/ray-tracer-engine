@@ -12,3 +12,7 @@
 - Textured Spheres & Triangles
 - loading texture files
 - convert hittible list to a BVH
+- material
+    - lambertian
+    - metal
+    - dieletics
