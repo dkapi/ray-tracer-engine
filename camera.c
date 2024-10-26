@@ -105,11 +105,14 @@ vec3 sample_square() {
 
 static point3 defocus_disk_sample(const camera_t* camera) {
     vec3 p = random_in_unit_disk();
+
     vec3 scaled_u = vec3_multiply_by_scalar(&camera->defocus_disk_u, p.x);
     vec3 scaled_v = vec3_multiply_by_scalar(&camera->defocus_disk_v, p.y);
-    vec3 temp = vec3_add(&scaled_u, &scaled_v);
-    return vec3_add(&camera->camera_center, &temp);
+
+    vec3 offset = vec3_add(&scaled_u, &scaled_v);
+    return vec3_add(&camera->camera_center, &offset);
 }
+
 
 // constructs a ray originating from the camera center and directed at a sampled point near pixel i, j
 ray_t get_ray(const camera_t* camera, int i, int j) {
@@ -121,6 +124,7 @@ ray_t get_ray(const camera_t* camera, int i, int j) {
     vec3 pixel_sample = vec3_add(&camera->pixel_00_loc, &i_scaled);
     pixel_sample = vec3_add(&pixel_sample, &j_scaled);
 
+    //depth of field
     vec3 ray_origin;
     if (camera->defocus_angle <= 0) {
         ray_origin = camera->camera_center;
@@ -128,7 +132,7 @@ ray_t get_ray(const camera_t* camera, int i, int j) {
         ray_origin = defocus_disk_sample(camera);
     }
     vec3 ray_direction = vec3_subtract(&pixel_sample, &ray_origin);
-    return ray_create(&camera->camera_center, &ray_direction);
+    return ray_create(&ray_origin, &ray_direction);
 }
 
 void display_progress(int completed, int total) {
