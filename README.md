@@ -22,4 +22,5 @@
 - convert hittible list to a BVH
 - perlin noise
 - scene files
+- motion blur maybe (dosent really seem cool)
 
