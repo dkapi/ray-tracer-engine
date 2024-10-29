@@ -2,13 +2,26 @@
 #include <stdlib.h>
 
 
-// Sphere constructor
-sphere* sphere_create(const point3 *center, double radius,  material_t* mat) {
+sphere* sphere_create(const point3 *center, double radius, material_t* mat) {
     sphere *s = (sphere *)malloc(sizeof(sphere));
-        s->center = *center;
-        s->radius = radius;
-        s->mat = mat;
-        s->base.hit = (hit_fn)hit_sphere;  // assign hit function pointer
+    if (s == NULL) {
+        printf("Failed to allocate memory for sphere.\n");
+        return NULL;
+    }
+
+    s->center = *center;
+    s->radius = radius;
+    s->mat = mat;
+
+    // Correctly calculate the bounding box
+    vec3 offset = vec3_create_values(radius, radius, radius);
+    point3 min = vec3_subtract(center, &offset);
+    point3 max = vec3_add(center, &offset);
+
+    s->bbox = aabb_create_with_points(&min, &max);
+
+    s->base.hit = (hit_fn)hit_sphere; 
+    s->base.bbox = (bounding_box_fn)sphere_bounding_box;
     return s;
 }
 
@@ -44,5 +57,11 @@ bool hit_sphere(const sphere *s, const ray_t *r, interval_t ray, hit_record_t *r
     set_face_normal(rec, r, &outward_normal);
     rec->mat = s->mat;
 
+    return true;
+}
+
+
+bool sphere_bounding_box(const sphere *s, aabb_t *output_box) {
+    *output_box = s->bbox;  
     return true;
 }

@@ -11,6 +11,7 @@
 #include "sphere.h"
 #include "triangle.h"
 #include "camera.h"
+#include "bvh.h"
 
 #define PI (const double) 3.1415926535897932385
 

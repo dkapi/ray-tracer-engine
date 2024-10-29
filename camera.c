@@ -70,7 +70,8 @@ color ray_color(const ray_t *r, int depth ,const hittable_list *world) {
     hit_record_t rec;
     
     // Check if the ray hits anything in the world
-    if (hittable_list_hit(world, r, interval_create(0.001, INFINITY), &rec)) {
+    // FIXME: fix the casting hittable_list to bvh_node, reason for casting is due old world being list
+    if (hit_bvh_node((bvh_node_t*)world, r, interval_create(0.001, INFINITY), &rec)) {
         ray_t scattered;
         color attenuation;
 

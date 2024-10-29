@@ -1,70 +1,132 @@
 #include "engine.h"
+#include <time.h>
+
 
 int main() {
-    // camera
-    camera_t camera = {0};
+    srand(time(NULL));
 
-    camera.aspect_ratio     = (16.0 / 9.0);
-    camera.image_width      = 2556;
-    camera.samples_per_pixel= 500;
-    camera.max_depth        = 50;
-    camera.vfov             = 15;
-    camera.lookfrom         = vec3_create_values(2, 1.5, 5); 
-    camera.lookat           = vec3_create_values(0, .9, 0);  
-    camera.vup              = vec3_create_values(0, 1, 0);
-    camera.defocus_angle    = 0.8;
-    camera.focus_dist       = 6.0; // focus dist is from camera origin(lookfrom) to whatever location is camera origin + focus dist
+    // camera setup
+    camera_t camera = {0};
+    camera.aspect_ratio      = 16.0 / 9.0;
+    camera.image_width       = 1440;
+    camera.samples_per_pixel = 500;
+    camera.max_depth         = 50;
+    camera.vfov              = 20;
+    camera.lookfrom          = vec3_create_values(13, 2, 3);
+    camera.lookat            = vec3_create_values(0, 0, 0);
+    camera.vup               = vec3_create_values(0, 1, 0);
+    camera.defocus_angle     = 0.6;
+    camera.focus_dist        = 10.0;
     camera_initialize(&camera);
 
-    // Open file to write PPM image & write header
+
+    // img
     FILE *img = fopen("output.ppm", "wb");
+    if (!img) {
+        fprintf(stderr, "Error: Unable to open output file\n");
+        return 1;
+    }
 
-    // Create hittable list (world)
-    hittable_list *world = hittable_list_create();
+    //world
+    hittable_list* world = hittable_list_create();
+    if (!world) {
+        fprintf(stderr, "Error: Unable to create hittable list\n");
+        fclose(img);
+        return 1;
+    }
 
-    color reflective_color = vec3_create_values(1.0, 1.0, 1.0); // White color for reflective glass
-    material_t *material_reflective_glass = (material_t *)create_metal(&reflective_color, 0.0); // Fully reflective
-
-    color copper_color = vec3_create_values(0.72, 0.45, 0.20);
-    material_t *material_copper = (material_t *)create_metal(&copper_color, 0.3);
-
-    material_t *material_glass = (material_t *)create_dielectric(1.3);
-    color ground_color = vec3_create_values(0.2, 0.2, 0.4);
-    material_t *ground_material = (material_t *)create_metal(&ground_color, 0.15);
-
-    point3 center = vec3_create_values(0, .8, 0);
-    sphere* s1 = sphere_create(&center, .08, material_copper);
-    point3 ground_center = vec3_create_values(0, -1000, 0);
-    sphere *ground_sphere = sphere_create(&ground_center, 1000.0, ground_material);
-    
-    point3 c2 = vec3_create_values(0, .8, 0);
-    sphere* s2 = sphere_create(&c2, .25, material_glass);
-    hittable_list_add(world, (hittable *)s2);
+    // ground sphere
+    color ground_color = vec3_create_values(0.5, 0.5, 0.5);
+    material_t *material_ground = (material_t *)create_lambertian(&ground_color);
+    point3 ground_center = vec3_create_values(0.0, -1000.0, 0.0);
+    sphere *ground_sphere = sphere_create(&ground_center, 1000.0, material_ground);
     hittable_list_add(world, (hittable *)ground_sphere);
 
-    hittable_list_add(world, (hittable*)s1);
+    // randomly scattered small spheres
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            double choose_mat = random_double();
+            point3 center = vec3_create_values(a + 0.9 * random_double(), 0.2, b + 0.9 * random_double());
 
-    point3 far = vec3_create_values(-1, 1.5, -10);
-    sphere* s_far = sphere_create(&far, 2, material_copper);
-    hittable_list_add(world, (hittable*)s_far);
+            vec3 tmp_sub = vec3_subtract(&center, &(vec3){4, 0.2, 0});
+            if (vec3_length(&tmp_sub) > 0.9) {
+                material_t *sphere_material;
 
+                if (choose_mat < 0.8) {
+                    // Diffuse             
+                    vec3 tmp1 =vec3_random();
+                    vec3 tmp2 =vec3_random();
+                    color albedo = vec3_multiply(&tmp1, &tmp2);
+                    sphere_material = (material_t *)create_lambertian(&albedo);
+                } else if (choose_mat < 0.95) {
+                    // Metal
+                    color albedo = vec3_random_values(0.5, 1.0);
+                    double fuzz = random_double_with_params(0, 0.5);
+                    sphere_material = (material_t *)create_metal(&albedo, fuzz);
+                } else {
+                    // Glass
+                    sphere_material = (material_t *)create_dielectric(1.5);
+                }
 
-    // Triangle behind the sphere
-    point3 pa = vec3_create_values(-0.3, 0.5, -1.0);
-    point3 pb = vec3_create_values(0.7, 0.5, -1.0);
-    point3 pc = vec3_create_values(.2, 1.0, -1.0);
+                sphere *small_sphere = sphere_create(&center, 0.2, sphere_material);
+                hittable_list_add(world, (hittable *)small_sphere);
+            }
+        }
+    }
 
-    triangle_t* tri = create_triangle(&pa, &pb, &pc, material_reflective_glass);
-    hittable_list_add(world, (hittable*)tri);
+    // three larger spheres
+    // glass sphere
+    material_t *material1 = (material_t *)create_dielectric(1.5);
+    point3 center1 = vec3_create_values(0.0, 1.0, 0.0);
+    sphere *sphere1 = sphere_create(&center1, 1.0, material1);
+    hittable_list_add(world, (hittable *)sphere1);
 
+    // lambertian sphere
+    color center_color = vec3_create_values(0.4, 0.2, 0.1);
+    material_t *material2 = (material_t *)create_lambertian(&center_color);
+    point3 center2 = vec3_create_values(-4.0, 1.0, 0.0);
+    sphere *sphere2 = sphere_create(&center2, 1.0, material2);
+    hittable_list_add(world, (hittable *)sphere2);
 
+    // metal sphere
+    color metal_color = vec3_create_values(0.7, 0.6, 0.5);
+    material_t *material3 = (material_t *)create_metal(&metal_color, 0.0);
+    point3 center3 = vec3_create_values(4.0, 1.0, 0.0);
+    sphere *sphere3 = sphere_create(&center3, 1.0, material3);
+    hittable_list_add(world, (hittable *)sphere3);
+
+    // create BVH from hittable list
+    size_t object_count = darray_size(world->objects);
+    hittable **objects = (hittable **)world->objects->data;
+
+    bvh_node_t *bvh_world = bvh_node_create_with_objects(objects, 0, object_count);
+    if (!bvh_world) {
+        fprintf(stderr, "Error: BVH creation failed\n");
+        hittable_list_destroy(world);
+        fclose(img);
+        return 1;
+    }
 
     // Render loop
-    render(&camera, world, img);
+    clock_t start_time = clock();
+
+    render(&camera, (hittable_list*)bvh_world, img);
+
+    clock_t end_time = clock();
+
+    double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    int minutes = (int)(elapsed_time / 60);
+    int seconds = (int)elapsed_time % 60;
+    printf("\nRender completed in %d minutes and %d seconds.\n", minutes, seconds);
 
     // Cleanup
     fclose(img);
     hittable_list_destroy(world);
+    bvh_node_free(bvh_world);
+    free(ground_sphere);
+    free(sphere1);
+    free(sphere2);
+    free(sphere3);
 
     return 0;
 }

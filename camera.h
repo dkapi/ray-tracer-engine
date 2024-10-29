@@ -5,6 +5,7 @@
 #include "stdlib.h"
 #include "color.h"
 #include "hittable.h"
+#include "bvh.h"
 
 
 typedef struct {

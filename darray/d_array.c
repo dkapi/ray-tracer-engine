@@ -15,10 +15,14 @@ void darray_destroy(darray *arr) {
     free(arr);
 }
 
-// Function to resize the dynamic array
 static void darray_resize(darray *arr) {
+    void **new_data = (void **)realloc(arr->data, arr->size * 2 * sizeof(void *));
+    if (new_data == NULL) {
+        printf("Error reallocating memory for darray.\n");
+        exit(EXIT_FAILURE);
+    }
+    arr->data = new_data;
     arr->size *= 2;
-    arr->data = (void **)realloc(arr->data, arr->size * sizeof(void *));
 }
 
 // Function to add an element to the dynamic array

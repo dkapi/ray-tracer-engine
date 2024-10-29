@@ -23,4 +23,5 @@
 - perlin noise
 - scene files
 - motion blur maybe (dosent really seem cool)
+- multi-threading (breaking rastor up to workers)
 
