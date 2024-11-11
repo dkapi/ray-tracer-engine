@@ -5,7 +5,7 @@
 int main(int argc, char*argv[]) {
     srand(time(NULL));
 
-    // manually set number of threads, else openMp decides
+    // manually set number of threads, else openMp git decides
     if (argc > 1) {
         int num_threads = atoi(argv[1]);
         if (num_threads > 0) {
