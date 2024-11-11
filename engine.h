@@ -5,12 +5,14 @@
 #include <limits.h>
 #include <memory.h>
 #include <stdio.h>
+#include <omp.h>
 
 #include "color.h"
 #include "hittable.h"
 #include "sphere.h"
 #include "triangle.h"
 #include "camera.h"
+#include "raster.h"
 #include "bvh.h"
 
 #define PI (const double) 3.1415926535897932385

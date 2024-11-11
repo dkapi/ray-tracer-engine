@@ -2,13 +2,13 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -ggdb
+CFLAGS = -Wall -ggdb -fopenmp -o2
 
 # Extra flags
-EXTRA_FLAGS = -lm 
+EXTRA_FLAGS = -fopenmp -lm 
 
 # Source files
-SRC = main.c vec3.c ray.c hittable.c sphere.c triangle.c darray/d_array.c interval.c camera.c color.c material.c aabb.c bvh.c
+SRC = main.c vec3.c ray.c hittable.c sphere.c triangle.c darray/d_array.c interval.c camera.c color.c material.c aabb.c bvh.c raster.c
 
 # Object files
 OBJ = $(SRC:.c=.o)

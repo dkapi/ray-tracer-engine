@@ -15,6 +15,8 @@
     - lambertian
     - metal
     - dieletics
+- multi-threading (implimented openMP over pthreads to see what its about)
+
 
 ## TODO:
 - Textured Spheres & Triangles
@@ -23,5 +25,5 @@
 - perlin noise
 - scene files
 - motion blur maybe (dosent really seem cool)
-- multi-threading (breaking rastor up to workers)
+
 

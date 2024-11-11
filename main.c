@@ -2,13 +2,22 @@
 #include <time.h>
 
 
-int main() {
+int main(int argc, char*argv[]) {
     srand(time(NULL));
+
+    // manually set number of threads, else openMp dynnamically decides
+    if (argc > 1) {
+        int num_threads = atoi(argv[1]);
+        if (num_threads > 0) {
+            omp_set_num_threads(num_threads);
+        }
+    }
+
 
     // camera setup
     camera_t camera = {0};
     camera.aspect_ratio      = 16.0 / 9.0;
-    camera.image_width       = 1440;
+    camera.image_width       = 1200;
     camera.samples_per_pixel = 500;
     camera.max_depth         = 50;
     camera.vfov              = 20;
@@ -26,6 +35,9 @@ int main() {
         fprintf(stderr, "Error: Unable to open output file\n");
         return 1;
     }
+    
+    //raster
+    pixel_t** raster = raster_init(camera.image_width, camera.image_height);
 
     //world
     hittable_list* world = hittable_list_create();
@@ -61,7 +73,7 @@ int main() {
                 } else if (choose_mat < 0.95) {
                     // Metal
                     color albedo = vec3_random_values(0.5, 1.0);
-                    double fuzz = random_double_with_params(0, 0.5);
+                    double fuzz = random_double_in_range(0, 0.5);
                     sphere_material = (material_t *)create_metal(&albedo, fuzz);
                 } else {
                     // Glass
@@ -99,7 +111,7 @@ int main() {
     size_t object_count = darray_size(world->objects);
     hittable **objects = (hittable **)world->objects->data;
 
-    bvh_node_t *bvh_world = bvh_node_create_with_objects(objects, 0, object_count);
+    bvh_node_t* bvh_world = bvh_node_init(objects, 0, object_count);
     if (!bvh_world) {
         fprintf(stderr, "Error: BVH creation failed\n");
         hittable_list_destroy(world);
@@ -108,13 +120,14 @@ int main() {
     }
 
     // Render loop
-    clock_t start_time = clock();
+    clock_t start_time = omp_get_wtime();
 
-    render(&camera, (hittable_list*)bvh_world, img);
+    render(&camera, bvh_world, raster);
+    raster_to_ppm(raster, camera.image_width, camera.image_height, img);
 
-    clock_t end_time = clock();
+    clock_t end_time = omp_get_wtime();
 
-    double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    double elapsed_time = end_time - start_time;
     int minutes = (int)(elapsed_time / 60);
     int seconds = (int)elapsed_time % 60;
     printf("\nRender completed in %d minutes and %d seconds.\n", minutes, seconds);

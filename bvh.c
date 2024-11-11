@@ -2,7 +2,7 @@
 #include "stdlib.h"
 
 bvh_node_t* bvh_node_create(hittable_list* list) {
-    return bvh_node_create_with_objects((hittable **)list->objects->data, 0, list->objects->count);
+    return bvh_node_init((hittable **)list->objects->data, 0, list->objects->count);
 }
 
 static inline int random_int(int min, int max) {
@@ -49,7 +49,7 @@ int box_z_compare(const void *a, const void *b) {
 }
 
 
-bvh_node_t* bvh_node_create_with_objects(hittable **objects, size_t start, size_t end) {
+bvh_node_t* bvh_node_init(hittable **objects, size_t start, size_t end) {
     bvh_node_t *node = (bvh_node_t *)malloc(sizeof(bvh_node_t));
     if (!node) {
         printf("Failed to allocate memory for BVH node.\n");
@@ -86,14 +86,14 @@ bvh_node_t* bvh_node_create_with_objects(hittable **objects, size_t start, size_
         // split the list into two halves and create BVH nodes for each half
         size_t mid = start + object_span / 2;
 
-        node->left = (hittable *)bvh_node_create_with_objects(objects, start, mid);
+        node->left = (hittable *)bvh_node_init(objects, start, mid);
         if (!node->left) {
             printf("Failed to create left BVH node (start=%zu, mid=%zu).\n", start, mid);
             free(node);
             return NULL;
         }
 
-        node->right = (hittable *)bvh_node_create_with_objects(objects, mid, end);
+        node->right = (hittable *)bvh_node_init(objects, mid, end);
         if (!node->right) {
             printf("Failed to create right BVH node (mid=%zu, end=%zu).\n", mid, end);
             free(node);

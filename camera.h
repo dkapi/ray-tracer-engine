@@ -6,6 +6,7 @@
 #include "color.h"
 #include "hittable.h"
 #include "bvh.h"
+#include "raster.h"
 
 
 typedef struct {
@@ -35,12 +36,12 @@ typedef struct {
     vec3 pixel_00_loc;
 } camera_t;
 
+
+
 void camera_initialize(camera_t* c);
-void render(const camera_t* camera, hittable_list* world, FILE* img);
-color ray_color(const ray_t *r, int depth, const hittable_list *world);
+void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster);
+color ray_color(const ray_t *r, int depth, const bvh_node_t* world);
 ray_t get_ray(const camera_t* camera, int i, int j);
 vec3 sample_square();
-
-
 
 #endif /* CAMERA_H */

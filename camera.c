@@ -61,7 +61,7 @@ void camera_initialize(camera_t* c) {
 } 
 
 // ray color function
-color ray_color(const ray_t *r, int depth ,const hittable_list *world) {
+color ray_color(const ray_t *r, int depth ,const bvh_node_t* world) {
     //max depth check
     if(depth <= 0) {
         return vec3_create_values(0,0,0);
@@ -157,30 +157,38 @@ void display_progress(int completed, int total) {
     fflush(stdout);
 }
 
-void render(const camera_t* camera, hittable_list* world, FILE* img) {
-    int x, y, sample;
-    int total_pixels = camera->image_height * camera->image_width;
-    fprintf(img, "P6\n%d %d\n255\n", camera->image_width, camera->image_height);
 
-    //rendering backwards rn cause somehow i made my images backwards idk man
-    for (y = camera->image_height - 1; y >= 0; y--) {
-        for (x = 0; x < camera->image_width; x++) {
+void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster) {
+    int total_pixels = camera->image_height * camera->image_width;
+    int completed_pixels = 0;
+
+    // render loop with added omp parallelization
+    #pragma omp parallel for schedule(dynamic) collapse(2)
+    for (int y = camera->image_height - 1; y >= 0; y--) {
+        for (int x = 0; x < camera->image_width; x++) {
             // accumulate color for each pixel by sampling multiple times
             color pixel_color = vec3_create_values(0, 0, 0);
-            for (sample = 0; sample < camera->samples_per_pixel; ++sample) {
+            for (int sample = 0; sample < camera->samples_per_pixel; ++sample) {
                 ray_t r = get_ray(camera, x, y);
-
                 color ray_col = ray_color(&r, camera->max_depth, world);
                 pixel_color = vec3_add(&pixel_color, &ray_col);
             }
 
+            // scale the accumulated color for this pixel
             pixel_color = vec3_multiply_by_scalar(&pixel_color, camera->pixel_samples_scale);
-            write_color(img, pixel_color);
 
-            //progress bar
-            int completed_pixels = (y * camera->image_width) + x + 1;
+            // write the final color to the raster
+            write_color(&raster[y][x], pixel_color);
+
+            // Progress bar update
+            //atomic flag since each thread has access to completed_pixels variable
+            #pragma omp atomic
+            completed_pixels++;
+
+            // updating progress bar 
             if (completed_pixels % (total_pixels / 100) == 0) {
-            display_progress(completed_pixels, total_pixels);
+                #pragma omp critical
+                display_progress(completed_pixels, total_pixels);
             }
         }
     }
