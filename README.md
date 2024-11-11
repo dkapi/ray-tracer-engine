@@ -15,13 +15,15 @@
     - lambertian
     - metal
     - dieletics
+- multi-threading (implimented openMP over pthreads to see what its about)
+- BVH acceleration structure
+
 
 ## TODO:
 - Textured Spheres & Triangles
 - loading texture files
-- convert hittible list to a BVH
 - perlin noise
 - scene files
 - motion blur maybe (dosent really seem cool)
-- multi-threading (breaking rastor up to workers)
+
 

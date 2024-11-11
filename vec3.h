@@ -58,7 +58,7 @@ static inline double random_double() {
     return rand() / (RAND_MAX + 1.0);
 }
 
-static inline double random_double_with_params(double min, double max) {
+static inline double random_double_in_range(double min, double max) {
     return min + (max-min)*random_double();
 }
 //  uhh maybe make static inline too

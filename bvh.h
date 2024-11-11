@@ -14,7 +14,7 @@ typedef struct bvh_node {
 
 // Function prototypes
 bvh_node_t* bvh_node_create(hittable_list *list);
-bvh_node_t* bvh_node_create_with_objects(hittable **objects, size_t start, size_t end);
+bvh_node_t* bvh_node_init(hittable **objects, size_t start, size_t end);
 bool hit_bvh_node(const bvh_node_t *node, const ray_t *r, interval_t ray_interval, hit_record_t *rec);
 bool bounding_box_bvh_node(const bvh_node_t *node, aabb_t *output_box);
 void bvh_node_free(bvh_node_t *node);

@@ -2,7 +2,7 @@
 #include "stdlib.h"
 
 bvh_node_t* bvh_node_create(hittable_list* list) {
-    return bvh_node_create_with_objects((hittable **)list->objects->data, 0, list->objects->count);
+    return bvh_node_init((hittable **)list->objects->data, 0, list->objects->count);
 }
 
 static inline int random_int(int min, int max) {
@@ -48,16 +48,37 @@ int box_z_compare(const void *a, const void *b) {
     return (box_a.z.min < box_b.z.min) ? -1 : 1;
 }
 
+// function to determine the longest axis of a bounding box
+static int bbox_longest_axis(const aabb_t *box) {
+    double x_size = box->x.max - box->x.min;
+    double y_size = box->y.max - box->y.min;
+    double z_size = box->z.max - box->z.min;
 
-bvh_node_t* bvh_node_create_with_objects(hittable **objects, size_t start, size_t end) {
+    if (x_size > y_size && x_size > z_size) {
+        return 0;
+    } else if (y_size > z_size) {
+        return 1;
+    } else {
+        return 2;
+    }
+}
+
+
+bvh_node_t* bvh_node_init(hittable **objects, size_t start, size_t end) {
     bvh_node_t *node = (bvh_node_t *)malloc(sizeof(bvh_node_t));
-    if (!node) {
-        printf("Failed to allocate memory for BVH node.\n");
-        return NULL;
+
+
+    // Calculate the bounding box of all objects in this node
+    aabb_t bbox = aabb_create_empty();
+    for (size_t i = start; i < end; ++i) {
+        aabb_t temp_box;
+        bbox = aabb_create_with_boxes(&bbox, &temp_box);
     }
 
-    // choose a random axis (0 = x, 1 = y, 2 = z)
-    int axis = rand() % 3;
+    node->bbox = bbox;
+
+    // choose a based on logest axis
+    int axis = bbox_longest_axis(&bbox);
     size_t object_span = end - start;
 
     if (object_span == 1) {
@@ -86,29 +107,13 @@ bvh_node_t* bvh_node_create_with_objects(hittable **objects, size_t start, size_
         // split the list into two halves and create BVH nodes for each half
         size_t mid = start + object_span / 2;
 
-        node->left = (hittable *)bvh_node_create_with_objects(objects, start, mid);
-        if (!node->left) {
-            printf("Failed to create left BVH node (start=%zu, mid=%zu).\n", start, mid);
-            free(node);
-            return NULL;
-        }
+        node->left  = (hittable *)bvh_node_init(objects, start, mid);
+        node->right = (hittable *)bvh_node_init(objects, mid, end);
 
-        node->right = (hittable *)bvh_node_create_with_objects(objects, mid, end);
-        if (!node->right) {
-            printf("Failed to create right BVH node (mid=%zu, end=%zu).\n", mid, end);
-            free(node);
-            return NULL;
-        }
     }
 
     // calculate the bounding box for this node
     aabb_t box_left, box_right;
-    if (!node->left->bbox(node->left, &box_left) ||
-        (node->right && !node->right->bbox(node->right, &box_right))) {
-        printf("Failed to calculate bounding box for BVH node.\n");
-        free(node);
-        return NULL;
-    }
 
     // If right is the same as left (single object case), box_right is not needed
     node->bbox = (node->left == node->right) ? box_left : aabb_surrounding_box(&box_left, &box_right);

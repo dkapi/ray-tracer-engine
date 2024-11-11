@@ -105,7 +105,7 @@ inline vec3 vec3_random() {
 }
 
 inline vec3 vec3_random_values(double min, double  max) {
-    return vec3_create_values(random_double_with_params(min, max), random_double_with_params(min, max), random_double_with_params(min, max));
+    return vec3_create_values(random_double_in_range(min, max), random_double_in_range(min, max), random_double_in_range(min, max));
 }
 
 vec3 vec3_unit_vector(const vec3 *v) {

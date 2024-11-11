@@ -10,12 +10,9 @@ static inline double linear_to_gamma(double linear_component)
     return 0;
 }
 
-void write_color(FILE* out, const color pixel_color) {
-    unsigned char r_byte = (unsigned char)(256 * interval_clamp(&intensity, linear_to_gamma(pixel_color.x)));
-    unsigned char g_byte = (unsigned char)(256 * interval_clamp(&intensity, linear_to_gamma(pixel_color.y)));
-    unsigned char b_byte = (unsigned char)(256 * interval_clamp(&intensity, linear_to_gamma(pixel_color.z)));
+void write_color(pixel_t *pixel, const color pixel_color) {
 
-    fwrite(&r_byte, 1, 1, out);
-    fwrite(&g_byte, 1, 1, out);
-    fwrite(&b_byte, 1, 1, out);
+    pixel->r = (unsigned char)(256 * interval_clamp(&intensity, linear_to_gamma(pixel_color.x)));
+    pixel->g = (unsigned char)(256 * interval_clamp(&intensity, linear_to_gamma(pixel_color.y)));
+    pixel->b = (unsigned char)(256 * interval_clamp(&intensity, linear_to_gamma(pixel_color.z)));
 }
