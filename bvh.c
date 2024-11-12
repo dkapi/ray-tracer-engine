@@ -114,7 +114,12 @@ bvh_node_t* bvh_node_init(hittable **objects, size_t start, size_t end) {
 
     // calculate the bounding box for this node
     aabb_t box_left, box_right;
-
+    if (!node->left->bbox(node->left, &box_left) ||
+        (node->right && !node->right->bbox(node->right, &box_right))) {
+        printf("Failed to calculate bounding box for BVH node.\n");
+        free(node);
+        return NULL;
+    }
     // If right is the same as left (single object case), box_right is not needed
     node->bbox = (node->left == node->right) ? box_left : aabb_surrounding_box(&box_left, &box_right);
 
