@@ -17,8 +17,8 @@ int main(int argc, char*argv[]) {
     // camera setup
     camera_t camera = {0};
     camera.aspect_ratio      = 16.0 / 9.0;
-    camera.image_width       = 1200;
-    camera.samples_per_pixel = 500;
+    camera.image_width       = 600;
+    camera.samples_per_pixel = 50;
     camera.max_depth         = 50;
     camera.vfov              = 20;
     camera.lookfrom          = vec3_create_values(13, 2, 3);
