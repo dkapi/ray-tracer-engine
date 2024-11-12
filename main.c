@@ -5,7 +5,7 @@
 int main(int argc, char*argv[]) {
     srand(time(NULL));
 
-    // manually set number of threads, else openMp decides
+    // manually set number of threads, else openMp dynnamically decides
     if (argc > 1) {
         int num_threads = atoi(argv[1]);
         if (num_threads > 0) {
@@ -17,7 +17,7 @@ int main(int argc, char*argv[]) {
     // camera setup
     camera_t camera = {0};
     camera.aspect_ratio      = 16.0 / 9.0;
-    camera.image_width       = 600;
+    camera.image_width       = 1200;
     camera.samples_per_pixel = 500;
     camera.max_depth         = 50;
     camera.vfov              = 20;
@@ -31,12 +31,21 @@ int main(int argc, char*argv[]) {
 
     // img
     FILE *img = fopen("output.ppm", "wb");
+    if (!img) {
+        fprintf(stderr, "Error: Unable to open output file\n");
+        return 1;
+    }
     
     //raster
     pixel_t** raster = raster_init(camera.image_width, camera.image_height);
 
     //world
     hittable_list* world = hittable_list_create();
+    if (!world) {
+        fprintf(stderr, "Error: Unable to create hittable list\n");
+        fclose(img);
+        return 1;
+    }
 
     // ground sphere
     color ground_color = vec3_create_values(0.5, 0.5, 0.5);
