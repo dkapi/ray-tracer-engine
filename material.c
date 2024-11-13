@@ -10,7 +10,7 @@ bool lambertian_scatter(const material_t* mat, const ray_t* r_in, const  hit_rec
         scatter_dir =  rec->normal;
     }
 
-    *scattered = ray_create(&rec->p, &scatter_dir);
+        *scattered = ray_create(&rec->p, &scatter_dir, r_in->time);
     *attenuation = lambertian->albedo;
 
     return true;
@@ -26,7 +26,7 @@ bool metal_scatter(const material_t* mat, const ray_t* r_in, const  hit_record_t
     vec3 fuzz_v = vec3_multiply_by_scalar(&random_vec, metal->fuzz);
     vec3 scattered_dir = vec3_add(&reflected, &fuzz_v);
 
-    *scattered = ray_create(&rec->p, &scattered_dir);
+    *scattered = ray_create(&rec->p, &scattered_dir, r_in->time);
     *attenuation = metal->albedo;
 
     return (vec3_dot(&scattered_dir, &rec->normal) > 0);
@@ -60,7 +60,7 @@ bool dielectric_scatter(const material_t* mat, const ray_t* r_in, const hit_reco
         direction = vec3_refract(&unit_dir, &rec->normal, rr);
     }
 
-    *scattered = ray_create(&rec->p, &direction);
+    *scattered = ray_create(&rec->p, &direction, r_in->time);
     return true;
 }
 

@@ -1,10 +1,11 @@
 #include "ray.h"
 
-ray_t ray_create(const vec3* origin, vec3* dir)
+ray_t ray_create(const vec3* origin, vec3* dir, double time)
 {
     ray_t r;
     r.origin = *origin;
     r.dir = *dir;
+    r.time = time;
     return r;
 }
 

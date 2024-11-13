@@ -8,15 +8,16 @@
     - field of view
     - depth of field
 - Ray/Sphere Intersection
-- hittible list of objects
-- Anti-Aliasing
 - Ray/Triangle Intersection
+- hittible list of objects
+- BVH acceleration structure
+- Anti-Aliasing
 - material
     - lambertian
     - metal
     - dieletics
 - multi-threading (implimented openMP over pthreads to see what its about)
-- BVH acceleration structure
+- Motion Blur for spheres:
 
 
 ## TODO:
@@ -24,6 +25,8 @@
 - loading texture files
 - perlin noise
 - scene files
-- motion blur maybe (dosent really seem cool)
+- light source
+- quads
+
 
 

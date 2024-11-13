@@ -70,8 +70,7 @@ color ray_color(const ray_t *r, int depth ,const bvh_node_t* world) {
     hit_record_t rec;
     
     // Check if the ray hits anything in the world
-    // FIXME: fix the casting hittable_list to bvh_node, reason for casting is due old world being list
-    if (hit_bvh_node((bvh_node_t*)world, r, interval_create(0.001, INFINITY), &rec)) {
+    if (hit_bvh_node(world, r, interval_create(0.001, INFINITY), &rec)) {
         ray_t scattered;
         color attenuation;
 
@@ -133,7 +132,8 @@ ray_t get_ray(const camera_t* camera, int i, int j) {
         ray_origin = defocus_disk_sample(camera);
     }
     vec3 ray_direction = vec3_subtract(&pixel_sample, &ray_origin);
-    return ray_create(&ray_origin, &ray_direction);
+    double ray_time = random_double();
+    return ray_create(&ray_origin, &ray_direction, ray_time);
 }
 
 void display_progress(int completed, int total) {
