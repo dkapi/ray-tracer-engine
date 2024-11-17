@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
                     sphere_material = (material_t *)create_dielectric(1.5);
                 }
 
-                moving_sphere_t *moving_sphere = moving_sphere_create(&center_start, &center_end, 0.2, 1.0, 0.2, sphere_material);
+                moving_sphere_t *moving_sphere = moving_sphere_create(&center_start, &center_end, 0.2, 1.0, 0.0, sphere_material);
                 hittable_list_add(world, (hittable *)moving_sphere);
             }
         }
