@@ -10,8 +10,8 @@ bool lambertian_scatter(const material_t* mat, const ray_t* r_in, const  hit_rec
         scatter_dir =  rec->normal;
     }
 
-        *scattered = ray_create(&rec->p, &scatter_dir, r_in->time);
-    *attenuation = lambertian->albedo;
+    *scattered = ray_create(&rec->p, &scatter_dir, r_in->time);
+    *attenuation = lambertian->tex->value(lambertian->tex, rec->u, rec->v, &rec->p);
 
     return true;
 }
@@ -64,13 +64,19 @@ bool dielectric_scatter(const material_t* mat, const ray_t* r_in, const hit_reco
     return true;
 }
 
-lambertian_t* create_lambertian(const color* albedo) {
+lambertian_t* create_lambertian_texture(texture_t* tex) {
     lambertian_t* lamb = (lambertian_t*)malloc(sizeof(lambertian_t));
 
     lamb->base.scatter = lambertian_scatter;
-    lamb->albedo = *albedo; 
+    lamb->tex = tex;
 
     return lamb;
+}
+
+lambertian_t* create_lambertian_color(const color* albedo) {
+    solid_color_t* solid = (solid_color_t*)malloc(sizeof(solid_color_t));
+    solid = create_solid_color(albedo->x, albedo->y, albedo->z); // Initialize solid color texture
+    return create_lambertian_texture((texture_t*)solid);
 }
 
 metal_t* create_metal(const color* albedo, double fuzz) {

@@ -35,9 +35,14 @@ int main(int argc, char* argv[]) {
     // World
     hittable_list* world = hittable_list_create();
 
+    texture_t* checker = (texture_t*)malloc(sizeof(checker_texture_t));
+    color even_color = vec3_create_values(0.2, 0.3, 0.1); // Dark green
+    color odd_color = vec3_create_values(0.9, 0.9, 0.9);  // Light gray
+    checker = (texture_t*)create_checker_texture_solid(0.32, even_color, odd_color);
+
     // Ground sphere
     color ground_color = vec3_create_values(0.5, 0.5, 0.5);
-    material_t *material_ground = (material_t *)create_lambertian(&ground_color);
+    material_t *material_ground = (material_t *)create_lambertian_texture(checker);
     point3 ground_center = vec3_create_values(0.0, -1000.0, 0.0);
     sphere_t *ground_sphere = sphere_create(&ground_center, 1000.0, material_ground);
     hittable_list_add(world, (hittable *)ground_sphere);
@@ -58,7 +63,7 @@ int main(int argc, char* argv[]) {
                     vec3 tmp1 = vec3_random();
                     vec3 tmp2 = vec3_random();
                     color albedo = vec3_multiply(&tmp1, &tmp2);
-                    sphere_material = (material_t *)create_lambertian(&albedo);
+                    sphere_material = (material_t *)create_lambertian_color(&albedo);
                 } else if (choose_mat < 0.95) {
                     // Metal
                     color albedo = vec3_random_values(0.5, 1.0);
@@ -84,7 +89,7 @@ int main(int argc, char* argv[]) {
 
     // Lambertian sphere
     color center_color = vec3_create_values(0.4, 0.2, 0.1);
-    material_t *material2 = (material_t *)create_lambertian(&center_color);
+    material_t *material2 = (material_t *)create_lambertian_color(&center_color);
     point3 center2 = vec3_create_values(-4.0, 1.0, 0.0);
     sphere_t *sphere2 = sphere_create(&center2, 1.0, material2);
     hittable_list_add(world, (hittable *)sphere2);

@@ -7,6 +7,7 @@
 #include "color.h"
 #include "vec3.h"
 #include "hittable.h"
+#include "textures/texture.h"
 
 // Forward declaration of `hit_record_t` to ensure it's recognized
 typedef struct hit_record hit_record_t;
@@ -24,7 +25,7 @@ struct material {
 
 typedef struct lambertian {
     material_t base;
-    color albedo;
+    texture_t* tex;
 } lambertian_t;
 
 typedef struct metal {
@@ -38,7 +39,8 @@ typedef struct dieletric {
     double refraction_index;
 } dielectric_t;
 
-lambertian_t* create_lambertian(const color* albedo);
+lambertian_t* create_lambertian_texture(texture_t* tex);
+lambertian_t* create_lambertian_color(const color* albedo);
 metal_t* create_metal(const color* albedo, double fuzz);\
 dielectric_t* create_dielectric(double refraction_index);
 void destroy_material(material_t* mat);

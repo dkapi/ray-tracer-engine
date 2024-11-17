@@ -9,17 +9,18 @@
 #include "aabb.h"
 
 
-// Forward declaration of material_t
+// forward declaration of material_t
 typedef struct material material_t;
 
-// Define hit_record_t
+// define hit_record_t
 typedef struct hit_record {
     point3 p;
     vec3 normal;
     double t;
+    double u;
+    double v;
     bool front_face;
-    material_t* mat;  // Add pointer to material
-
+    material_t* mat;
 } hit_record_t;
 
 // function pointer type for hit methods in hittable objects

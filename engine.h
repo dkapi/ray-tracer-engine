@@ -14,6 +14,7 @@
 #include "camera.h"
 #include "raster.h"
 #include "bvh.h"
+#include "textures/texture.h"
 
 #define PI (const double) 3.1415926535897932385
 
