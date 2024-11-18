@@ -57,6 +57,12 @@ bool hit_sphere(const sphere_t *s, const ray_t *r, interval_t ray, hit_record_t 
     set_face_normal(rec, r, &outward_normal);
     rec->mat = s->mat;
 
+    // texture coords u,v
+    double theta = acos(-outward_normal.y);
+    double phi = atan2(-outward_normal.z, outward_normal.x) + PI;
+    rec->u = phi / (2 * PI);
+    rec->v = theta / PI;
+
     return true;
 }
 
@@ -138,6 +144,11 @@ bool hit_moving_sphere(const moving_sphere_t* ms, const ray_t* r, interval_t ray
     set_face_normal(rec, r, &outward_normal);
     rec->mat = ms->mat;
 
+    // texture coords u, v
+    double theta = acos(-outward_normal.y);
+    double phi = atan2(-outward_normal.z, outward_normal.x) + PI;
+    rec->u = phi / (2 * PI);
+    rec->v = theta /PI;
     return true;
 }
 

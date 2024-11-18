@@ -2,7 +2,7 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -ggdb -fopenmp -o2
+CFLAGS = -Wall -ggdb -fopenmp -o2 -Iinclude
 
 # Extra flags
 EXTRA_FLAGS = -fopenmp -lm 

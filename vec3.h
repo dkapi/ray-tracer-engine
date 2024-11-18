@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#define PI (const double) 3.1415926535897932385
+#define PI (const double) 3.1415926535897932386
 
 
 /*

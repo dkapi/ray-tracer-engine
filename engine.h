@@ -16,7 +16,7 @@
 #include "bvh.h"
 #include "textures/texture.h"
 
-#define PI (const double) 3.1415926535897932385
+#define PI (const double) 3.1415926535897932386
 
 
 static inline double degrees_to_radians(double degrees) {

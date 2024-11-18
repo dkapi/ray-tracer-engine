@@ -1,4 +1,6 @@
 #include  "texture.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 // solid color value function
 color solid_color_value(const texture_t *self, double u, double v, const point3 *p) {
@@ -47,4 +49,48 @@ checker_texture_t* create_checker_texture_solid(double scale, color c1, color c2
     checker->odd = odd;
 
     return checker;
+}
+
+//image textures
+image_texture_t* create_image_texture(const char* filename) {
+    image_texture_t* tex = (image_texture_t*)malloc(sizeof(image_texture_t));
+
+    // load image data using stb_image
+    tex->data = stbi_load(filename, &tex->width, &tex->height, &tex->bytes_per_pixel, 0);
+    if (!tex->data) {
+        fprintf(stderr, "Failed to load texture image: %s\n", filename);
+        free(tex);
+        return NULL;
+    }
+
+    tex->base.value = (texture_value_fn)image_texture_value; // assign function pointer
+    return tex;
+}
+void free_image_texture(image_texture_t* tex) {
+    if (tex->data) {
+        stbi_image_free(tex->data); 
+    }
+    free(tex);
+}
+color image_texture_value(const texture_t* self, double u, double v, const point3* p) {
+    const image_texture_t* tex = (const image_texture_t*)self;
+
+    // clamp UV coordinates to [0, 1]
+    u = u < 0 ? 0 : (u > 1 ? 1 : u);
+    v = v < 0 ? 0 : (v > 1 ? 1 : v);
+
+    // convert UV coordinates to pixel indices
+    int i = (int)(u * tex->width);
+    int j = (int)((1 - v) * tex->height - 0.001);
+    if (j < 0) j = 0;
+    if (j >= tex->height) j = tex->height - 1;
+
+    const int index = j * tex->width * tex->bytes_per_pixel + i * tex->bytes_per_pixel;
+
+    // extract pixel data and convert to [0, 1] range
+    double r = tex->data[index] / 255.0;
+    double g = tex->data[index + 1] / 255.0;
+    double b = tex->data[index + 2] / 255.0;
+
+    return vec3_create_values(r, g, b);
 }
