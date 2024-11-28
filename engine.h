@@ -15,6 +15,7 @@
 #include "raster.h"
 #include "bvh.h"
 #include "textures/texture.h"
+#include "triangle_mesh.h"
 
 #define PI (const double) 3.1415926535897932386
 

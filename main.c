@@ -15,14 +15,14 @@ int main(int argc, char* argv[]) {
     // Camera setup
     camera_t camera = {0};
     camera.aspect_ratio      = 16.0 / 9.0;
-    camera.image_width       = 600;
-    camera.samples_per_pixel = 500;
+    camera.image_width       = 1440;  
+    camera.samples_per_pixel = 500; 
     camera.max_depth         = 50;
-    camera.vfov              = 20;
-    camera.lookfrom          = vec3_create_values(0, 0, 12);
-    camera.lookat            = vec3_create_values(0, 0, 0);
-    camera.vup               = vec3_create_values(0, 1, 0);
-    camera.defocus_angle     = 0.0;
+    camera.vfov              = 40;  
+    camera.lookfrom          = vec3_create_values(-10.0, 4.0, 4.0); 
+    camera.lookat            = vec3_create_values(0.0, 0.0, 0.0); 
+    camera.vup               = vec3_create_values(0.0, 1.0, 0.0); 
+    camera.defocus_angle     = 0.0; 
     camera.focus_dist        = 1.0;
     camera_initialize(&camera);
 
@@ -36,19 +36,17 @@ int main(int argc, char* argv[]) {
     hittable_list* world = hittable_list_create();
 
     // Load an image texture
-    texture_t* earth_texture = (texture_t*)create_image_texture("textures/texture_images/earthmap.jpg");
-    if (!earth_texture) {
-        fprintf(stderr, "Failed to load earth texture.\n");
-        return 1;
-    }
+    texture_t* image_tex = (texture_t*)create_image_texture("textures/texture_images/Red_brick_wall_texture.jpg");
+    color center_color = vec3_create_values(0.4, 0.2, 0.1);
+    material_t *material2 = (material_t *)create_lambertian_color(&center_color);
 
     // Create a Lambertian material using the image texture
-    material_t* earth_material = (material_t*)create_lambertian_texture(earth_texture);
+    material_t* mat_tex = (material_t*)create_lambertian_texture(image_tex);
 
-    // Add a sphere with the earth texture
-    vec3 center = vec3_create_values(0, 0, 0);
-    sphere_t* earth_sphere = sphere_create(&center, 2.0, earth_material);
-    hittable_list_add(world, (hittable*)earth_sphere);
+    mesh_t* mesh = load_obj("meshes/teapot.obj", material2);
+
+    // Add mesh triangles to the world
+    add_mesh_to_world(mesh, world);
 
     // create BVH from hittable list
     size_t object_count = darray_size(world->objects);
@@ -79,6 +77,7 @@ int main(int argc, char* argv[]) {
     fclose(img);
     hittable_list_destroy(world);
     bvh_node_free(bvh_world);
+    free_mesh(mesh);
 
 
     return 0;

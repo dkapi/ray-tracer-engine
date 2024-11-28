@@ -16,14 +16,14 @@
     - lambertian
     - metal
     - dieletics
-- Textured Spheres
+- Textured Spheres & triangles
 - loading texture files
+- loading triangle mesh files
 - multi-threading (implimented openMP over pthreads to see what its about)
 - Motion Blur for spheres:
 
 
 ## TODO:
-- textured triangles
 - perlin noise
 - scene files
 - light source
