@@ -3,12 +3,12 @@
 #include <string.h>
 #include "triangle_mesh.h"
 
-#define MAX_LINE_LENGTH 256
+#define MAX_LINE_LENGTH 256 //should be fine, if anything too much
 
 mesh_t* load_obj(const char* filename, material_t* mat) {
     FILE* file = fopen(filename, "r");
     if (!file) {
-        fprintf(stderr, "Failed to open OBJ file: %s\n", filename);
+        fprintf(stderr, "failed to open OBJ file: %s\n", filename);
         return NULL;
     }
 
