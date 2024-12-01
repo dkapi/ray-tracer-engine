@@ -19,6 +19,7 @@
 - Textured Spheres & triangles
 - loading texture files
 - loading triangle mesh files
+- light source/Emissive material
 - multi-threading (implimented openMP over pthreads to see what its about) - 10
 - Motion Blur for spheres: - 10
 - perlin noise - 10
@@ -26,7 +27,9 @@
 
 ## TODO:
 - scene files
-- light source
+- volumes - 10
+- importance sampling (maybe) - 15
+- object instances - 10
 
 
 

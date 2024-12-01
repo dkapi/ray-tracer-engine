@@ -1,5 +1,14 @@
 #include "material.h"
 
+// Default scatter implementation
+static bool default_scatter(const material_t* mat, const ray_t* r_in, const hit_record_t* rec, color* attenuation, ray_t* scattered) {
+    return false; 
+}
+
+static color default_emitted(const material_t* mat, double u, double v, const point3* p) {
+    return vec3_create_values(0, 0, 0); 
+}
+
 bool lambertian_scatter(const material_t* mat, const ray_t* r_in, const  hit_record_t * rec, color* attenuation, ray_t* scattered) {
     const lambertian_t* lambertian = (const lambertian_t*)mat;
 
@@ -68,14 +77,14 @@ lambertian_t* create_lambertian_texture(texture_t* tex) {
     lambertian_t* lamb = (lambertian_t*)malloc(sizeof(lambertian_t));
 
     lamb->base.scatter = lambertian_scatter;
+    lamb->base.emitted = default_emitted;
     lamb->tex = tex;
 
     return lamb;
 }
 
 lambertian_t* create_lambertian_color(const color* albedo) {
-    solid_color_t* solid = (solid_color_t*)malloc(sizeof(solid_color_t));
-    solid = create_solid_color(albedo->x, albedo->y, albedo->z); // Initialize solid color texture
+    solid_color_t* solid = create_solid_color(albedo->x, albedo->y, albedo->z);
     return create_lambertian_texture((texture_t*)solid);
 }
 
@@ -83,6 +92,7 @@ metal_t* create_metal(const color* albedo, double fuzz) {
     metal_t* metal = (metal_t*)malloc(sizeof(metal_t));
 
     metal->base.scatter = metal_scatter;
+    metal->base.emitted = default_emitted;
     metal->albedo = *albedo;
     metal->fuzz = fuzz < 1.0 ? fuzz : 1.0;
     
@@ -92,11 +102,30 @@ metal_t* create_metal(const color* albedo, double fuzz) {
 dielectric_t* create_dielectric(double r_idx) {
     dielectric_t* die = (dielectric_t*)malloc(sizeof(dielectric_t));
     die->base.scatter = dielectric_scatter;
+    die->base.emitted = default_emitted;
     die->refraction_index = r_idx;
     
     return die;
 }
 
+//lights, camera, action...
+static color diffuse_light_emitted(const material_t* mat, double u, double v, const point3* p) {
+    const diffuse_light_t* light = (const diffuse_light_t*)mat;
+    return light->emit->value(light->emit, u, v, p);
+}
+
+diffuse_light_t* create_diffuse_light_texture(texture_t* emit_texture) {
+    diffuse_light_t* light = (diffuse_light_t*)malloc(sizeof(diffuse_light_t));
+    light->base.scatter = default_scatter;
+    light->base.emitted = diffuse_light_emitted;
+    light->emit = emit_texture;
+    return light;
+}
+
+diffuse_light_t* create_diffuse_light_color(const color* emit_color) {
+    texture_t* tex = (texture_t*)create_solid_color(emit_color->x, emit_color->y, emit_color->z);
+    return create_diffuse_light_texture(tex);
+}
 void destroy_material(material_t* mat){
     free(mat);
 }

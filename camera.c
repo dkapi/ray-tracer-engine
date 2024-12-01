@@ -61,7 +61,7 @@ void camera_initialize(camera_t* c) {
 } 
 
 // ray color function
-color ray_color(const ray_t *r, int depth ,const bvh_node_t* world) {
+color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color* background) {
     //max depth check
     if(depth <= 0) {
         return vec3_create_values(0,0,0);
@@ -73,27 +73,16 @@ color ray_color(const ray_t *r, int depth ,const bvh_node_t* world) {
     if (hit_bvh_node(world, r, interval_create(0.001, INFINITY), &rec)) {
         ray_t scattered;
         color attenuation;
+        color emitted = rec.mat->emitted(rec.mat, rec.u, rec.v, &rec.p);
 
         if (rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered)) {
-            color scattered_color = ray_color(&scattered, depth -1, world);
+            color scattered_color = ray_color(&scattered, depth -1, world, background);
             return vec3_multiply(&attenuation, &scattered_color);
         }
 
-        return vec3_create_values(0, 0, 0);
+        return emitted;
     }
-
-    // background gradient 
-    vec3 unit_direction = vec3_unit_vector(&r->dir);
-    double t = 0.5 * (unit_direction.y + 1.0);
-    
-    color white = vec3_create_values(1.0, 1.0, 1.0);
-    color blue = vec3_create_values(0.5, 0.7, 1.0);
-
-    // linear blend between white and blue based on t for background
-    color white_scaled = vec3_multiply_by_scalar(&white, 1.0 - t);
-    color blue_scaled = vec3_multiply_by_scalar(&blue, t);
-    color blended = vec3_add(&white_scaled, &blue_scaled);
-    return blended;
+    return *background;
 }
 
 
@@ -170,7 +159,7 @@ void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster) {
             color pixel_color = vec3_create_values(0, 0, 0);
             for (int sample = 0; sample < camera->samples_per_pixel; ++sample) {
                 ray_t r = get_ray(camera, x, y);
-                color ray_col = ray_color(&r, camera->max_depth, world);
+                color ray_col = ray_color(&r, camera->max_depth, world, &camera->background);
                 pixel_color = vec3_add(&pixel_color, &ray_col);
             }
 

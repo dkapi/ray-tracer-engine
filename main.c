@@ -15,15 +15,16 @@ int main(int argc, char* argv[]) {
     // Camera setup
     camera_t camera = {0};
     camera.aspect_ratio      = 1.0;
-    camera.image_width       = 400;  
-    camera.samples_per_pixel = 100; 
+    camera.image_width       = 600;  
+    camera.samples_per_pixel = 200; 
     camera.max_depth         = 50;
-    camera.vfov              = 80;  
-    camera.lookfrom          = vec3_create_values(0, 0, 9);
-    camera.lookat            = vec3_create_values(0, 0, 0);
-    camera.vup               = vec3_create_values(0, 1, 0);
+    camera.vfov              = 40;  
+    camera.lookfrom          = (point3){278, 278, -800};
+    camera.lookat            = (point3){278, 278, 0};
+    camera.vup               = (point3){0, 1, 0};
     camera.defocus_angle     = 0.0; 
-    camera.focus_dist        = 1.0;
+    camera.focus_dist        = 1.0; // do not set to zero :D
+    camera.background        = (color){0,0,0};
     camera_initialize(&camera);
 
     // image output
@@ -34,53 +35,25 @@ int main(int argc, char* argv[]) {
 
     // world
     hittable_list* world = hittable_list_create();
-    // compound literals are great :D
-    material_t* left_red     = (material_t*)create_lambertian_color(&(color){1.0, 0.2, 0.2});
-    material_t* back_green   = (material_t*)create_lambertian_color(&(color){0.2, 1.0, 0.2});
-    material_t* right_blue   = (material_t*)create_lambertian_color(&(color){0.2, 0.2, 1.0});
-    material_t* upper_orange = (material_t*)create_lambertian_color(&(color){1.0, 0.5, 0.0});
-    material_t* lower_teal   = (material_t*)create_lambertian_color(&(color){0.2, 0.8, 0.8});
 
-    // Quads
-    quads_t* left_quad = quad_create(
-        &(vec3){-3, -2, 5}, 
-        &(vec3){0, 0, -4}, 
-        &(vec3){0, 4, 0}, 
-        left_red
-    );
-    hittable_list_add(world, (hittable*)left_quad);
+    material_t* red   = (material_t*)create_lambertian_color(&(color){.65,.05,.05});
+    material_t* white = (material_t*)create_lambertian_color(&(color){.73,.73,.73});
+    material_t* green = (material_t*)create_lambertian_color(&(color){.12,.45,.15});
+    material_t* light = (material_t*)create_diffuse_light_color(&(color){15,15,15});
 
-    quads_t* back_quad = quad_create(
-        &(vec3){-2, -2, 0},
-        &(vec3){4, 0, 0},
-        &(vec3){0, 4, 0},
-        back_green
-    );
-    hittable_list_add(world, (hittable*)back_quad);
+    quads_t* q1 = quad_create(&(point3){555,0,0}, &(vec3){0,555,0}, &(vec3){0,0,555}, green);
+    hittable_list_add(world, (hittable*)q1);
+    quads_t* q2 = quad_create(&(point3){0,0,0}, &(vec3){0,555,0}, &(vec3){0,0,555}, red);
+    hittable_list_add(world, (hittable*)q2);
+    quads_t* q3 = quad_create(&(point3){343,554,332}, &(vec3){-130,0,0}, &(vec3){0,0,-105}, light);
+    hittable_list_add(world, (hittable*)q3);
+    quads_t* q4 = quad_create(&(point3){0,0,0}, &(vec3){555,0,0}, &(vec3){0,0,555}, white);
+    hittable_list_add(world, (hittable*)q4);
+    quads_t* q5 = quad_create(&(point3){555,555,555}, &(vec3){-555,0,0}, &(vec3){0,0,-555}, white);
+    hittable_list_add(world, (hittable*)q5);
+    quads_t* q6 = quad_create(&(point3){0,0,555}, &(vec3){555,0,0}, &(vec3){0,555,0}, white);
+    hittable_list_add(world, (hittable*)q6);
 
-    quads_t* right_quad = quad_create(
-        &(vec3){3, -2, 1},
-        &(vec3){0, 0, 4},
-        &(vec3){0, 4, 0},
-        right_blue
-    );
-    hittable_list_add(world, (hittable*)right_quad);
-
-    quads_t* upper_quad = quad_create(
-        &(vec3){-2, 3, 1},
-        &(vec3){4, 0, 0},
-        &(vec3){0, 0, 4},
-        upper_orange
-    );
-    hittable_list_add(world, (hittable*)upper_quad);
-
-    quads_t* lower_quad = quad_create(
-        &(vec3){-2, -3, 5},
-        &(vec3){4, 0, 0},
-        &(vec3){0, 0, -4},
-        lower_teal
-    );
-    hittable_list_add(world, (hittable*)lower_quad);
     // create BVH from hittable list
     size_t object_count = darray_size(world->objects);
     hittable **objects = (hittable **)world->objects->data;
