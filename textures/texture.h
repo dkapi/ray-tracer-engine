@@ -3,7 +3,7 @@
 
 #include "../vec3.h"
 #include "../color.h"
-#include "../perlin.h"
+#include "perlin.h"
 
 //forward declarations
 typedef struct texture texture_t;

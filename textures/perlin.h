@@ -1,7 +1,7 @@
 #ifndef PERLIN_H
 #define PERLIN_H
 
-#include "vec3.h"
+#include "../vec3.h"
 #include "math.h"
 #define PERLIN_POINT_COUNT 256
 
