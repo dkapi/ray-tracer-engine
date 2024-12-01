@@ -1,5 +1,18 @@
 #include "aabb.h"
 
+#define AABB_MIN_DELTA 0.0001  // Minimum size for each interval
+
+static void aabb_pad_to_minimums(aabb_t *box) {
+    if (interval_size(&box->x) < AABB_MIN_DELTA) {
+        box->x = interval_expand(&box->x, AABB_MIN_DELTA);
+    }
+    if (interval_size(&box->y) < AABB_MIN_DELTA) {
+        box->y = interval_expand(&box->y, AABB_MIN_DELTA);
+    }
+    if (interval_size(&box->z) < AABB_MIN_DELTA) {
+        box->z = interval_expand(&box->z, AABB_MIN_DELTA);
+    }
+}
 
 aabb_t aabb_create_empty() {
     aabb_t box;
@@ -14,6 +27,8 @@ aabb_t aabb_create_with_intervals(const interval_t* x, const interval_t* y, cons
     box.x = *x;
     box.y = *y;
     box.z = *z;
+
+    aabb_pad_to_minimums(&box); 
     return box;
 }
 
@@ -22,6 +37,8 @@ aabb_t aabb_create_with_points(const point3* a, const point3* b) {
     box.x = (a->x <= b->x) ? interval_create(a->x, b->x) : interval_create(b->x, a->x);
     box.y = (a->y <= b->y) ? interval_create(a->y, b->y) : interval_create(b->y, a->y);
     box.z = (a->z <= b->z) ? interval_create(a->z, b->z) : interval_create(b->z, a->z);
+
+    aabb_pad_to_minimums(&box); 
     return box;
 }
 
@@ -30,6 +47,8 @@ aabb_t aabb_create_with_boxes(const aabb_t *box0, const aabb_t *box1) {
     box.x = interval_enclose(&box0->x, &box1->x);
     box.y = interval_enclose(&box0->y, &box1->y);
     box.z = interval_enclose(&box0->z, &box1->z);
+
+    aabb_pad_to_minimums(&box); 
     return box;
 }
 

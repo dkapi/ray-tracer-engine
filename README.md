@@ -22,12 +22,12 @@
 - multi-threading (implimented openMP over pthreads to see what its about) - 10
 - Motion Blur for spheres: - 10
 - perlin noise - 10
-
+- Ray/Quads Intersection - 10
 
 ## TODO:
 - scene files
 - light source
-- quads
+
 
 
 

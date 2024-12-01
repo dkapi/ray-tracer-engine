@@ -14,14 +14,14 @@ int main(int argc, char* argv[]) {
 
     // Camera setup
     camera_t camera = {0};
-    camera.aspect_ratio      = 16.0 / 9.0;
+    camera.aspect_ratio      = 1.0;
     camera.image_width       = 400;  
-    camera.samples_per_pixel = 400; 
+    camera.samples_per_pixel = 100; 
     camera.max_depth         = 50;
-    camera.vfov              = 40;  
-    camera.lookfrom          = vec3_create_values(-10.0, 4.0, 4.0); 
-    camera.lookat            = vec3_create_values(0.0, 0.0, 0.0); 
-    camera.vup               = vec3_create_values(0.0, 1.0, 0.0); 
+    camera.vfov              = 80;  
+    camera.lookfrom          = vec3_create_values(0, 0, 9);
+    camera.lookat            = vec3_create_values(0, 0, 0);
+    camera.vup               = vec3_create_values(0, 1, 0);
     camera.defocus_angle     = 0.0; 
     camera.focus_dist        = 1.0;
     camera_initialize(&camera);
@@ -35,17 +35,52 @@ int main(int argc, char* argv[]) {
     // world
     hittable_list* world = hittable_list_create();
 
-    // Create Perlin noise texture with a high scale for marbling
-    noise_texture_t* marble_texture = create_noise_texture(5.0); // Adjust scale for frequency
+    material_t* left_red     = (material_t*)create_lambertian_color(&(color){1.0, 0.2, 0.2});
+    material_t* back_green   = (material_t*)create_lambertian_color(&(color){0.2, 1.0, 0.2});
+    material_t* right_blue   = (material_t*)create_lambertian_color(&(color){0.2, 0.2, 1.0});
+    material_t* upper_orange = (material_t*)create_lambertian_color(&(color){1.0, 0.5, 0.0});
+    material_t* lower_teal   = (material_t*)create_lambertian_color(&(color){0.2, 0.8, 0.8});
 
-    // Add a ground sphere with marble texture
-    sphere_t* ground_sphere = sphere_create(&(point3){0, -1000, 0}, 1000, (material_t*)create_lambertian_texture((texture_t*)marble_texture));
-    hittable_list_add(world, (hittable*)ground_sphere);
+    // Quads
+    quads_t* left_quad = quad_create(
+        &(vec3){-3, -2, 5},  // Origin
+        &(vec3){0, 0, -4},   // U vector
+        &(vec3){0, 4, 0},    // V vector
+        left_red
+    );
+    hittable_list_add(world, (hittable*)left_quad);
 
-    // Add a smaller sphere with marble texture
-    sphere_t* small_sphere = sphere_create(&(point3){0, 2, 0}, 2, (material_t*)create_lambertian_texture((texture_t*)marble_texture));
-    hittable_list_add(world, (hittable*)small_sphere);
-    hittable_list_add(world, (hittable*)small_sphere);
+    quads_t* back_quad = quad_create(
+        &(vec3){-2, -2, 0},
+        &(vec3){4, 0, 0},
+        &(vec3){0, 4, 0},
+        back_green
+    );
+    hittable_list_add(world, (hittable*)back_quad);
+
+    quads_t* right_quad = quad_create(
+        &(vec3){3, -2, 1},
+        &(vec3){0, 0, 4},
+        &(vec3){0, 4, 0},
+        right_blue
+    );
+    hittable_list_add(world, (hittable*)right_quad);
+
+    quads_t* upper_quad = quad_create(
+        &(vec3){-2, 3, 1},
+        &(vec3){4, 0, 0},
+        &(vec3){0, 0, 4},
+        upper_orange
+    );
+    hittable_list_add(world, (hittable*)upper_quad);
+
+    quads_t* lower_quad = quad_create(
+        &(vec3){-2, -3, 5},
+        &(vec3){4, 0, 0},
+        &(vec3){0, 0, -4},
+        lower_teal
+    );
+    hittable_list_add(world, (hittable*)lower_quad);
     // create BVH from hittable list
     size_t object_count = darray_size(world->objects);
     hittable **objects = (hittable **)world->objects->data;

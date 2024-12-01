@@ -11,6 +11,7 @@
 #include "hittable.h"
 #include "sphere.h"
 #include "triangle.h"
+#include "quad.h"
 #include "camera.h"
 #include "raster.h"
 #include "bvh.h"

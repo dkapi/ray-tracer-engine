@@ -14,6 +14,7 @@ SRC = main.c \
 	  hittable.c \
 	  sphere.c \
 	  triangle.c \
+	  quad.c \
   	  darray/d_array.c \
 	  interval.c \
 	  camera.c \

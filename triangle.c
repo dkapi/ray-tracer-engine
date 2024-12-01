@@ -12,6 +12,11 @@ triangle_t* create_triangle(const point3* a, const point3* b, const point3* c, m
     triangle->c = *c;
     triangle->mat = mat;
     triangle->base.hit = (hit_fn)hit_triangle;  // assign hit function pointer
+    triangle->base.bbox = (bounding_box_fn)triangle_bounding_box; // assign bounding box function
+
+    triangle->bbox.x = interval_create(fmin(a->x, fmin(b->x, c->x)), fmax(a->x, fmax(b->x, c->x)));
+    triangle->bbox.y = interval_create(fmin(a->y, fmin(b->y, c->y)), fmax(a->y, fmax(b->y, c->y)));
+    triangle->bbox.z = interval_create(fmin(a->z, fmin(b->z, c->z)), fmax(a->z, fmax(b->z, c->z)));
 
     return triangle;
 }
@@ -29,21 +34,9 @@ triangle_t* create_triangle_uv(const point3* a, const point3* b, const point3* c
     triangle->base.hit = (hit_fn)hit_triangle;  // assign the hit function pointer
     triangle->base.bbox = (bounding_box_fn)triangle_bounding_box; // assign bounding box function
 
-    double min_x = fmin(triangle->a.x, fmin(triangle->b.x, triangle->c.x));
-    double min_y = fmin(triangle->a.y, fmin(triangle->b.y, triangle->c.y));
-    double min_z = fmin(triangle->a.z, fmin(triangle->b.z, triangle->c.z));
-    double max_x = fmax(triangle->a.x, fmax(triangle->b.x, triangle->c.x));
-    double max_y = fmax(triangle->a.y, fmax(triangle->b.y, triangle->c.y));
-    double max_z = fmax(triangle->a.z, fmax(triangle->b.z, triangle->c.z));
-
-    // Add padding to prevent zero thickness
-    double padding = 1e-5; // Small epsilon
-    point3 min = vec3_create_values(min_x - padding, min_y - padding, min_z - padding);
-    point3 max = vec3_create_values(max_x + padding, max_y + padding, max_z + padding);
-
-
-
-    triangle->bbox = aabb_create_with_points(&min, &max);
+    triangle->bbox.x = interval_create(fmin(a->x, fmin(b->x, c->x)), fmax(a->x, fmax(b->x, c->x)));
+    triangle->bbox.y = interval_create(fmin(a->y, fmin(b->y, c->y)), fmax(a->y, fmax(b->y, c->y)));
+    triangle->bbox.z = interval_create(fmin(a->z, fmin(b->z, c->z)), fmax(a->z, fmax(b->z, c->z)));
 
 
     return triangle;
