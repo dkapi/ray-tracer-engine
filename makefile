@@ -8,7 +8,23 @@ CFLAGS = -Wall -ggdb -fopenmp -o2 -Iinclude
 EXTRA_FLAGS = -fopenmp -lm 
 
 # Source files
-SRC = main.c vec3.c ray.c hittable.c sphere.c triangle.c darray/d_array.c interval.c camera.c color.c material.c aabb.c bvh.c raster.c textures/texture.c triangle_mesh.c
+SRC = main.c \
+	  vec3.c \
+	  ray.c \
+	  hittable.c \
+	  sphere.c \
+	  triangle.c \
+  	  darray/d_array.c \
+	  interval.c \
+	  camera.c \
+	  color.c \
+	  material.c \
+	  aabb.c \
+	  bvh.c \
+	  raster.c \
+	  textures/texture.c \
+	  triangle_mesh.c \
+	  perlin.c \
 
 # Object files
 OBJ = $(SRC:.c=.o)

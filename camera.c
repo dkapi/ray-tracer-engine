@@ -87,7 +87,7 @@ color ray_color(const ray_t *r, int depth ,const bvh_node_t* world) {
     double t = 0.5 * (unit_direction.y + 1.0);
     
     color white = vec3_create_values(1.0, 1.0, 1.0);
-    color blue = vec3_create_values(0.7, 0.5, 1.0);
+    color blue = vec3_create_values(0.5, 0.7, 1.0);
 
     // linear blend between white and blue based on t for background
     color white_scaled = vec3_multiply_by_scalar(&white, 1.0 - t);

@@ -15,8 +15,8 @@ int main(int argc, char* argv[]) {
     // Camera setup
     camera_t camera = {0};
     camera.aspect_ratio      = 16.0 / 9.0;
-    camera.image_width       = 1440;  
-    camera.samples_per_pixel = 500; 
+    camera.image_width       = 400;  
+    camera.samples_per_pixel = 400; 
     camera.max_depth         = 50;
     camera.vfov              = 40;  
     camera.lookfrom          = vec3_create_values(-10.0, 4.0, 4.0); 
@@ -35,19 +35,17 @@ int main(int argc, char* argv[]) {
     // world
     hittable_list* world = hittable_list_create();
 
-    // Load an image texture
-    texture_t* image_tex = (texture_t*)create_image_texture("textures/texture_images/Red_brick_wall_texture.jpg");
-    color center_color = vec3_create_values(0.4, 0.2, 0.1);
-    material_t *material2 = (material_t *)create_lambertian_color(&center_color);
+    // Create Perlin noise texture with a high scale for marbling
+    noise_texture_t* marble_texture = create_noise_texture(5.0); // Adjust scale for frequency
 
-    // Create a Lambertian material using the image texture
-    material_t* mat_tex = (material_t*)create_lambertian_texture(image_tex);
+    // Add a ground sphere with marble texture
+    sphere_t* ground_sphere = sphere_create(&(point3){0, -1000, 0}, 1000, (material_t*)create_lambertian_texture((texture_t*)marble_texture));
+    hittable_list_add(world, (hittable*)ground_sphere);
 
-    mesh_t* mesh = load_obj("meshes/teapot.obj", material2);
-
-    // Add mesh triangles to the world
-    add_mesh_to_world(mesh, world);
-
+    // Add a smaller sphere with marble texture
+    sphere_t* small_sphere = sphere_create(&(point3){0, 2, 0}, 2, (material_t*)create_lambertian_texture((texture_t*)marble_texture));
+    hittable_list_add(world, (hittable*)small_sphere);
+    hittable_list_add(world, (hittable*)small_sphere);
     // create BVH from hittable list
     size_t object_count = darray_size(world->objects);
     hittable **objects = (hittable **)world->objects->data;
@@ -77,7 +75,6 @@ int main(int argc, char* argv[]) {
     fclose(img);
     hittable_list_destroy(world);
     bvh_node_free(bvh_world);
-    free_mesh(mesh);
 
 
     return 0;

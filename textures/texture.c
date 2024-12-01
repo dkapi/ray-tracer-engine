@@ -94,3 +94,33 @@ color image_texture_value(const texture_t* self, double u, double v, const point
 
     return vec3_create_values(r, g, b);
 }
+
+// perlin noise textures
+color noise_texture_value(const texture_t* self, double u, double v, const point3* p) {
+    const noise_texture_t* noise_tex = (const noise_texture_t*)self;
+
+    // Apply Perlin noise with turbulence for the marble effect
+    double marble_pattern = sin(noise_tex->scale * p->z + 10 * perlin_turbulence(noise_tex->noise, p, 7));
+
+    // Normalize to [0, 1] and scale color
+    double noise_val = 0.5 * (1.0 + marble_pattern);
+
+    return vec3_create_values(noise_val, noise_val, noise_val);
+}
+
+
+noise_texture_t* create_noise_texture(double scale) {
+    noise_texture_t* noise_tex = (noise_texture_t*)malloc(sizeof(noise_texture_t));
+
+    noise_tex->base.value = (texture_value_fn)noise_texture_value; // typical function pointer assignment
+    noise_tex->noise = perlin_create();                           // initializing perlin noise
+    noise_tex->scale = scale;                                     // setting scale of noise
+
+    return noise_tex;
+}
+
+void free_noise_texture(noise_texture_t* noise_tex) {
+    if (!noise_tex) return;
+    perlin_free(noise_tex->noise);
+    free(noise_tex);
+}

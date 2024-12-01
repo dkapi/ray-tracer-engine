@@ -6,7 +6,7 @@
     - configurable position
     - orientation 
     - field of view
-    - depth of field
+    - depth of field - 10
 - Ray/Sphere Intersection
 - Ray/Triangle Intersection
 - hittible list of objects
@@ -19,12 +19,12 @@
 - Textured Spheres & triangles
 - loading texture files
 - loading triangle mesh files
-- multi-threading (implimented openMP over pthreads to see what its about)
-- Motion Blur for spheres:
+- multi-threading (implimented openMP over pthreads to see what its about) - 10
+- Motion Blur for spheres: - 10
+- perlin noise - 10
 
 
 ## TODO:
-- perlin noise
 - scene files
 - light source
 - quads
