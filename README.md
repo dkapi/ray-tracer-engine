@@ -26,7 +26,7 @@
 - Ray/Quads Intersection - 10
 
 ## TODO:
-- scene files
+- scene files(not needed i believe)
 - volumes - 10
 - importance sampling (maybe) - 15
 - object instances - 10
