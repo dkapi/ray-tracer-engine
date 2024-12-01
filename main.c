@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
 
     // world
     hittable_list* world = hittable_list_create();
-
+    // compound literals are great :D
     material_t* left_red     = (material_t*)create_lambertian_color(&(color){1.0, 0.2, 0.2});
     material_t* back_green   = (material_t*)create_lambertian_color(&(color){0.2, 1.0, 0.2});
     material_t* right_blue   = (material_t*)create_lambertian_color(&(color){0.2, 0.2, 1.0});
@@ -43,9 +43,9 @@ int main(int argc, char* argv[]) {
 
     // Quads
     quads_t* left_quad = quad_create(
-        &(vec3){-3, -2, 5},  // Origin
-        &(vec3){0, 0, -4},   // U vector
-        &(vec3){0, 4, 0},    // V vector
+        &(vec3){-3, -2, 5}, 
+        &(vec3){0, 0, -4}, 
+        &(vec3){0, 4, 0}, 
         left_red
     );
     hittable_list_add(world, (hittable*)left_quad);
