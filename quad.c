@@ -32,6 +32,38 @@ quads_t* quad_create(const point3* Q, const vec3* u, const vec3* v, material_t* 
     return quad;
 }
 
+
+hittable* create_box(const point3* min, const point3* max, material_t* mat) {
+    hittable_list* box_faces = hittable_list_create();
+
+    vec3 dx = (vec3){max->x - min->x, 0, 0};
+    vec3 dy = (vec3){0, max->y - min->y, 0};
+    vec3 dz = (vec3){0, 0, max->z - min->z};
+
+    // Front face
+    point3 front_origin = {min->x, min->y, max->z};
+    hittable_list_add(box_faces, (hittable*)quad_create(&front_origin, &dx, &dy, mat));
+    // Back face
+    point3 back_origin = {min->x, min->y, min->z};
+    hittable_list_add(box_faces, (hittable*)quad_create(&back_origin, &dx, &dy, mat));
+    // Left face
+    point3 left_origin = {min->x, min->y, min->z};
+    hittable_list_add(box_faces, (hittable*)quad_create(&left_origin, &dz, &dy, mat));
+    // Right face
+    point3 right_origin = {max->x, min->y, min->z};
+    hittable_list_add(box_faces, (hittable*)quad_create(&right_origin, &dz, &dy, mat));
+    // Top face
+    point3 top_origin = {min->x, max->y, min->z};
+    hittable_list_add(box_faces, (hittable*)quad_create(&top_origin, &dx, &dz, mat));
+    // Bottom face
+    point3 bottom_origin = {min->x, min->y, min->z};
+    hittable_list_add(box_faces, (hittable*)quad_create(&bottom_origin, &dx, &dz, mat));
+
+    return (hittable*)box_faces;
+}
+
+
+
 bool quad_bounding_box(const quads_t* quad, aabb_t* output_box) {
     *output_box = quad->bbox;
     return true;

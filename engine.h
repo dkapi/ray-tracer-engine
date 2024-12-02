@@ -12,6 +12,7 @@
 #include "sphere.h"
 #include "triangle.h"
 #include "quad.h"
+#include "object_instancing.h"
 #include "camera.h"
 #include "raster.h"
 #include "bvh.h"
@@ -20,10 +21,6 @@
 
 #define PI (const double) 3.1415926535897932386
 
-
-static inline double degrees_to_radians(double degrees) {
-    return degrees * PI / 180.0;
-}
 
 // static inline double random_double() {
 //     return rand() / (RAND_MAX + 1.0);

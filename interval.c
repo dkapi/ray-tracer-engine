@@ -35,6 +35,10 @@ bool interval_surrounds(const interval_t *i, double x) {
     return i->min < x && x < i->max;
 }
 
+interval_t interval_offset(const interval_t* ival, double displacement) {
+    return interval_create(ival->min + displacement, ival->max + displacement);
+}
+
 double interval_clamp(const interval_t *i, double x) {
     if(x < i->min) {
         return i->min;

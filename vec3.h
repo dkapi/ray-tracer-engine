@@ -7,12 +7,10 @@
 
 #define PI (const double) 3.1415926535897932386
 
+static inline double degrees_to_radians(double degrees) {
+    return degrees * PI / 180.0;
+}
 
-/*
-    derived from ray tracing in one weekend book
-    only caviate is the book is written in c++
-    and i'd like to try in C
-*/
 
 typedef struct vec3 vec3;
 //alias for code clarity eventually...
@@ -65,6 +63,8 @@ static inline double random_double_in_range(double min, double max) {
 vec3 vec3_random();
 vec3 vec3_random_values(double min, double max);
 
+vec3 vec3_min(const vec3* a, const vec3* b);
+vec3 vec3_max(const vec3* a, const vec3* b);
 vec3 vec3_unit_vector(const vec3 *v);
 vec3 vec3_random_unit_vector();
 vec3 vec3_random_on_hemisphere(const vec3* normal);

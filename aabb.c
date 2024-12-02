@@ -52,6 +52,15 @@ aabb_t aabb_create_with_boxes(const aabb_t *box0, const aabb_t *box1) {
     return box;
 }
 
+aabb_t aabb_offset(const aabb_t* bbox, const vec3* offset) {
+    return (aabb_t){
+        .x = interval_create(bbox->x.min + offset->x, bbox->x.max + offset->x),
+        .y = interval_create(bbox->y.min + offset->y, bbox->y.max + offset->y),
+        .z = interval_create(bbox->z.min + offset->z, bbox->z.max + offset->z)
+    };
+}
+
+
 const interval_t* aabb_axis_interval(const aabb_t* box, int n) {
     if (n == 1) return &(box->y);
     if (n == 2) return &(box->z);

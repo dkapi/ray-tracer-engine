@@ -14,6 +14,7 @@ aabb_t aabb_create_with_intervals(const interval_t* x, const interval_t* y, cons
 aabb_t aabb_create_with_points(const point3* a, const point3* b);
 aabb_t aabb_create_with_boxes(const aabb_t *box0, const aabb_t *box1);
 aabb_t aabb_surrounding_box(const aabb_t *box0, const aabb_t *box1);
+aabb_t aabb_offset(const aabb_t* bbox, const vec3* offset);
 const interval_t* aabb_axis_interval(const aabb_t* box, int n);
 bool aabb_hit(const aabb_t* box, const ray_t* r, interval_t ray_interval);
 

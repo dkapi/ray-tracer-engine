@@ -94,6 +94,22 @@ vec3 vec3_cross(const vec3 *u, const vec3 *v) {
     );
 }
 
+vec3 vec3_min(const vec3* a, const vec3* b) {
+    return (vec3){
+        .x = (a->x < b->x) ? a->x : b->x,
+        .y = (a->y < b->y) ? a->y : b->y,
+        .z = (a->z < b->z) ? a->z : b->z
+    };
+}
+
+vec3 vec3_max(const vec3* a, const vec3* b) {
+    return (vec3){
+        .x = (a->x > b->x) ? a->x : b->x,
+        .y = (a->y > b->y) ? a->y : b->y,
+        .z = (a->z > b->z) ? a->z : b->z
+    };
+}
+
 bool vec3_near_zero(const vec3* u){
     double s = 1e-8;
     return (fabs(u->x) <  s) && (fabs(u->y) <  s) && (fabs(u->z) <  s);

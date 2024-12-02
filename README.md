@@ -24,12 +24,14 @@
 - Motion Blur for spheres: - 10
 - perlin noise - 10
 - Ray/Quads Intersection - 10
+- object instances - 10
 
 ## TODO:
-- scene files(not needed i believe)
 - volumes - 10
 - importance sampling (maybe) - 15
-- object instances - 10
+- quadrics (maybe) - 15
+- cube maps (maybe) - 15
+- HDR (maybe) 
 
 
 

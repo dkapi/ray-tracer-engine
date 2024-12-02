@@ -1,8 +1,5 @@
 #include "camera.h"
 
-static inline double degrees_to_radians(double degrees) {
-    return degrees * PI / 180.0;
-}
 
 void camera_initialize(camera_t* c) {
     c->image_height = (int)(c->image_width / (c->aspect_ratio));
