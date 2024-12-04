@@ -12,6 +12,7 @@
 #include "sphere.h"
 #include "triangle.h"
 #include "quad.h"
+#include "volumes.h"
 #include "object_instancing.h"
 #include "camera.h"
 #include "raster.h"

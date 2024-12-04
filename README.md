@@ -25,9 +25,9 @@
 - perlin noise - 10
 - Ray/Quads Intersection - 10
 - object instances - 10
+- volumes - 10
 
 ## TODO:
-- volumes - 10
 - importance sampling (maybe) - 15
 - quadrics (maybe) - 15
 - cube maps (maybe) - 15

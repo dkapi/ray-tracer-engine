@@ -15,8 +15,8 @@ int main(int argc, char* argv[]) {
     // Camera setup
     camera_t camera = {0};
     camera.aspect_ratio      = 1.0;
-    camera.image_width       = 1440;  
-    camera.samples_per_pixel = 1000; 
+    camera.image_width       = 600;  
+    camera.samples_per_pixel = 200; 
     camera.max_depth         = 50;
     camera.vfov              = 40;  
     camera.lookfrom          = (point3){278, 278, -800};
@@ -40,15 +40,20 @@ int main(int argc, char* argv[]) {
     material_t* red   = (material_t*)create_lambertian_color(&(color){.65, .05, .05});
     material_t* white = (material_t*)create_lambertian_color(&(color){.73, .73, .73});
     material_t* green = (material_t*)create_lambertian_color(&(color){.12, .45, .15});
-    material_t* light = (material_t*)create_diffuse_light_color(&(color){15, 15, 15});
+    material_t* light = (material_t*)create_diffuse_light_color(&(color){7, 7, 7});
 
     // cornell box walls
     hittable_list_add(world, (hittable*)quad_create(&(point3){555, 0, 0}, &(vec3){0, 555, 0}, &(vec3){0, 0, 555}, green)); // Right wall
     hittable_list_add(world, (hittable*)quad_create(&(point3){0, 0, 0}, &(vec3){0, 555, 0}, &(vec3){0, 0, 555}, red));   // Left wall
-    hittable_list_add(world, (hittable*)quad_create(&(point3){343, 554, 332}, &(vec3){-130, 0, 0}, &(vec3){0, 0, -105}, light)); // Light
+    hittable_list_add(world, (hittable*)quad_create(&(point3){114, 554, 127}, &(vec3){330, 0, 0}, &(vec3){0, 0, 305}, light)); // Light
     hittable_list_add(world, (hittable*)quad_create(&(point3){0, 0, 0}, &(vec3){555, 0, 0}, &(vec3){0, 0, 555}, white)); // Floor
     hittable_list_add(world, (hittable*)quad_create(&(point3){555, 555, 555}, &(vec3){-555, 0, 0}, &(vec3){0, 0, -555}, white)); // Ceiling
     hittable_list_add(world, (hittable*)quad_create(&(point3){0, 0, 555}, &(vec3){555, 0, 0}, &(vec3){0, 555, 0}, white)); // Back wall
+
+    // material_t* fog_texture = (material_t*)create_solid_color(0.8, 0.8, 0.8);
+    // hittable* fog_boundary = (hittable*)sphere_create(&(point3){278, 278, 278}, 150, NULL);
+    // hittable* fog = (hittable*)volume_create(fog_boundary, 0.01, (texture_t*)fog_texture);
+    // hittable_list_add(world, fog);
 
     // First box
     point3 box1_min = (point3){0, 0, 0};
@@ -56,7 +61,7 @@ int main(int argc, char* argv[]) {
     hittable* box1 = create_box(&box1_min, &box1_max, white);
     hittable* rotated_box1 = (hittable*)rotate_object_y(box1, 15);
     hittable* translated_box1 = (hittable*)translate_object(rotated_box1, &(vec3){265, 0, 295});
-    hittable_list_add(world, translated_box1);
+    // hittable_list_add(world, translated_box1);
 
     // Second box
     point3 box2_min = (point3){0, 0, 0};
@@ -64,7 +69,14 @@ int main(int argc, char* argv[]) {
     hittable* box2 = create_box(&box2_min, &box2_max, white);
     hittable* rotated_box2 = (hittable*)rotate_object_y(box2, -18);
     hittable* translated_box2 = (hittable*)translate_object(rotated_box2, &(vec3){130, 0, 65});
-    hittable_list_add(world, translated_box2);
+    // hittable_list_add(world, translated_box2);
+
+    hittable* volume1 = (hittable*)volume_create(translated_box1, 0.01, (texture_t*)create_solid_color(0, 0, 0));
+    hittable* volume2 = (hittable*)volume_create(translated_box2, 0.01, (texture_t*)create_solid_color(1, 1, 1));
+
+    hittable_list_add(world, volume1);
+    hittable_list_add(world, volume2);
+
 
     // create BVH from hittable list
     size_t object_count = darray_size(world->objects);

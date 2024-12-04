@@ -24,7 +24,6 @@ typedef struct hit_record {
 } hit_record_t;
 
 // function pointer type for hit methods in hittable objects
-//TODO: remove this eventually probably, since we dont need it when we use bounding hit
 typedef bool (*hit_fn)(const void *self, const ray_t *r, interval_t ray, hit_record_t *rec);
 
 // function pointer type for calculating bounding boxes in hittable objects

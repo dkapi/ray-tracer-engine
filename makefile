@@ -15,6 +15,7 @@ SRC = main.c \
 	  sphere.c \
 	  triangle.c \
 	  quad.c \
+	  volumes.c \
 	  object_instancing.c \
   	  darray/d_array.c \
 	  interval.c \

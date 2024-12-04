@@ -1,6 +1,6 @@
 #include "material.h"
 
-// Default scatter implementation
+// default scatter implementation
 static bool default_scatter(const material_t* mat, const ray_t* r_in, const hit_record_t* rec, color* attenuation, ray_t* scattered) {
     return false; 
 }
@@ -73,6 +73,13 @@ bool dielectric_scatter(const material_t* mat, const ray_t* r_in, const hit_reco
     return true;
 }
 
+bool isotropic_scatter(const isotropic_t* iso, const ray_t* r_in, const hit_record_t* rec, color* attenuation, ray_t* scattered) {
+    vec3 temp = vec3_random_unit_vector();
+    *scattered = ray_create(&rec->p, &temp, r_in->time);
+    *attenuation = iso->albedo->value(iso->albedo, rec->u, rec->v, &rec->p);
+    return true;
+}
+
 lambertian_t* create_lambertian_texture(texture_t* tex) {
     lambertian_t* lamb = (lambertian_t*)malloc(sizeof(lambertian_t));
 
@@ -126,6 +133,19 @@ diffuse_light_t* create_diffuse_light_color(const color* emit_color) {
     texture_t* tex = (texture_t*)create_solid_color(emit_color->x, emit_color->y, emit_color->z);
     return create_diffuse_light_texture(tex);
 }
+
+//volumes/isometric scattering & create
+
+isotropic_t* create_isotropic(texture_t* tex) {
+    isotropic_t* isotropic = (isotropic_t*)malloc(sizeof(isotropic_t));
+    isotropic->albedo = tex;
+    isotropic->base.scatter = (scatter_fn)isotropic_scatter;
+    isotropic->base.emitted = default_emitted;
+    
+    return isotropic;
+}
+
+
 void destroy_material(material_t* mat){
     free(mat);
 }

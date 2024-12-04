@@ -5,7 +5,6 @@ pixel_t** raster_init(int width, int height) {
         
         for(int i = 0; i < height; ++i) {
             raster[i] = malloc(width * sizeof(pixel_t));
-
         }
     return raster;
 }
@@ -18,7 +17,6 @@ void raster_to_ppm(pixel_t **raster, int width, int height, FILE *img) {
         }
     }
 }
-
 
 void destroy_raster(pixel_t** raster, int height) {
     for(int i = 0; i < height; ++i) {
