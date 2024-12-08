@@ -28,7 +28,8 @@ SRC = main.c \
 	  textures/texture.c \
 	  textures/perlin.c \
 	  triangle_mesh.c \
-	  cube_map.c
+	  cube_map.c \
+	  hdr.c 
 
 # Object files
 OBJ = $(SRC:.c=.o)

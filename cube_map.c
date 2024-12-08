@@ -12,10 +12,10 @@ cubemap_t* create_cubemap(const char* file_paths[6]) {
             return NULL;
         }
     }
-
     return cubemap;
 }
 
+// TODO: make cubemap work from a single cross image
 // // create a cube map from a single image with a given layout
 // cubemap_t* create_cubemap_from_single_image(const char* filepath, int layout) {
 //     int width, height, channels;

@@ -18,6 +18,7 @@
 #include "raster.h"
 #include "bvh.h"
 #include "cube_map.h"
+#include "hdr.h"
 #include "textures/texture.h"
 #include "triangle_mesh.h"
 

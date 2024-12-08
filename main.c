@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
     camera_t camera = {0};
     camera.aspect_ratio      = 1.0;
     camera.image_width       = 600;  
-    camera.samples_per_pixel = 500; 
+    camera.samples_per_pixel = 100; 
     camera.max_depth         = 50;
     camera.vfov              = 40;  
     camera.lookfrom          = (point3){0 , 0, -10};
@@ -59,6 +59,8 @@ int main(int argc, char* argv[]) {
     hittable* mars = (hittable*)sphere_create(&(point3){0,0,0}, 3.0, mars_tex);
     hittable_list_add(world, reflective_sphere);
 
+    hdr_texture_t* hdr_tex = load_hdr_image("textures/HDRI/creepy_bathroom_4k.hdr");
+
 
     // create BVH from hittable list
     size_t object_count = darray_size(world->objects);
@@ -75,7 +77,7 @@ int main(int argc, char* argv[]) {
     // render loop
     double start_time = omp_get_wtime();
 
-    render(&camera, bvh_world, raster, cubemap);
+    render(&camera, bvh_world, raster, NULL, hdr_tex);
     raster_to_ppm(raster, camera.image_width, camera.image_height, img);
 
     double end_time = omp_get_wtime();

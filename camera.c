@@ -58,7 +58,7 @@ void camera_initialize(camera_t* c) {
 } 
 
 // ray color function
-color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color* background, const cubemap_t* cubemap) {
+color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color* background, const cubemap_t* cubemap, const hdr_texture_t* hdr) {
     //max depth check
     if(depth <= 0) {
         return vec3_create_values(0,0,0);
@@ -73,17 +73,28 @@ color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color*
         color emitted = rec.mat->emitted(rec.mat, rec.u, rec.v, &rec.p);
 
         if (rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered)) {
-            color scattered_color = ray_color(&scattered, depth -1, world, background, cubemap);
+            color scattered_color = ray_color(&scattered, depth -1, world, background, cubemap, hdr);
             return vec3_multiply(&attenuation, &scattered_color);
         }
         return emitted;
     }
-       //return cubemap, else return background default color
+    /**
+     * return cubemap sample,
+     * else check for hdr and return,
+     * else return background as default
+     */
     if (cubemap) {
         vec3 dir = vec3_unit_vector(&r->dir);
         return cubemap_value(cubemap, &dir);
-    } else {
-        return *background;};
+    } 
+    if(hdr) {
+    vec3 dir = vec3_unit_vector(&r->dir);
+    double u, v;
+    direction_to_uv(&dir, &u, &v);
+    return sample_hdr(hdr, u, v);
+    }
+
+    return *background;
 }
 
 
@@ -148,7 +159,7 @@ void display_progress(int completed, int total) {
 }
 
 
-void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap) {
+void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap, const hdr_texture_t* hdr) {
     int total_pixels = camera->image_height * camera->image_width;
     int completed_pixels = 0;
 
@@ -160,7 +171,7 @@ void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const c
             color pixel_color = vec3_create_values(0, 0, 0);
             for (int sample = 0; sample < camera->samples_per_pixel; ++sample) {
                 ray_t r = get_ray(camera, x, y);
-                color ray_col = ray_color(&r, camera->max_depth, world, &camera->background, cubemap);
+                color ray_col = ray_color(&r, camera->max_depth, world, &camera->background, cubemap, hdr);
                 pixel_color = vec3_add(&pixel_color, &ray_col);
             }
 

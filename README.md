@@ -27,11 +27,11 @@
 - object instances - 10
 - volumes - 10
 - cube maps - 15
+- HDR - 10
 
 ## TODO:
 - importance sampling (maybe) - 15
 - quadrics (maybe) - 15
-- HDR (maybe) - 10
 
 
 

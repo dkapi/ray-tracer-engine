@@ -10,5 +10,6 @@ typedef vec3 color;
 
 void write_color(pixel_t* pixel, const color pixel_color);
 color tone_map(const color* pixel_color, double exposure);
+color aces_tone_map(const color* hdr_color, double exposure);
 
 #endif /* COLOR_H */
