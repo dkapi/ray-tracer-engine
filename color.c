@@ -11,7 +11,8 @@ static inline double linear_to_gamma(double linear_component)
 }
 
 void write_color(pixel_t *pixel, const color pixel_color) {
-    color hdri_tone = tone_map(&pixel_color, 1.1); // use later for hdri's
+    //color hdri_tone = tone_map(&pixel_color, 1.1); // use later for hdri's
+    //TODO: erm if color looks off, mess with exposure level here
     color aces_tone = aces_tone_map(&pixel_color, 0.05);
 
     pixel->r = (unsigned char)(256 * interval_clamp(&intensity, aces_tone.x));
