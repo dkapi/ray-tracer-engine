@@ -44,6 +44,7 @@ typedef struct {
 
 hittable_list* hittable_list_create();
 void hittable_list_add(hittable_list *list, hittable *object);
+void hittable_list_merge(hittable_list *target, const hittable_list *source);
 void hittable_list_destroy(hittable_list *list);
 bool hittable_list_hit(const hittable_list *list, const ray_t *r, interval_t ray, hit_record_t *rec);
 bool hittable_list_bounding_box(const hittable_list *list, aabb_t *output_box);

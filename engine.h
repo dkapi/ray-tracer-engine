@@ -17,6 +17,7 @@
 #include "camera.h"
 #include "raster.h"
 #include "bvh.h"
+#include "cube_map.h"
 #include "textures/texture.h"
 #include "triangle_mesh.h"
 

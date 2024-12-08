@@ -61,3 +61,7 @@ dkms.conf
 
 #scene folder
 scenes/
+
+#textures folder
+textures/cubemaps/
+textures/texture_images/

@@ -58,7 +58,7 @@ void camera_initialize(camera_t* c) {
 } 
 
 // ray color function
-color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color* background) {
+color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color* background, const cubemap_t* cubemap) {
     //max depth check
     if(depth <= 0) {
         return vec3_create_values(0,0,0);
@@ -73,13 +73,17 @@ color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color*
         color emitted = rec.mat->emitted(rec.mat, rec.u, rec.v, &rec.p);
 
         if (rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered)) {
-            color scattered_color = ray_color(&scattered, depth -1, world, background);
+            color scattered_color = ray_color(&scattered, depth -1, world, background, cubemap);
             return vec3_multiply(&attenuation, &scattered_color);
         }
-
         return emitted;
     }
-    return *background;
+       //return cubemap, else return background default color
+    if (cubemap) {
+        vec3 dir = vec3_unit_vector(&r->dir);
+        return cubemap_value(cubemap, &dir);
+    } else {
+        return *background;};
 }
 
 
@@ -144,11 +148,11 @@ void display_progress(int completed, int total) {
 }
 
 
-void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster) {
+void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap) {
     int total_pixels = camera->image_height * camera->image_width;
     int completed_pixels = 0;
 
-    // render loop with added omp parallelization
+    // render loop with omp parallelization
     #pragma omp parallel for schedule(dynamic) collapse(2)
     for (int y = camera->image_height - 1; y >= 0; y--) {
         for (int x = 0; x < camera->image_width; x++) {
@@ -156,7 +160,7 @@ void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster) {
             color pixel_color = vec3_create_values(0, 0, 0);
             for (int sample = 0; sample < camera->samples_per_pixel; ++sample) {
                 ray_t r = get_ray(camera, x, y);
-                color ray_col = ray_color(&r, camera->max_depth, world, &camera->background);
+                color ray_col = ray_color(&r, camera->max_depth, world, &camera->background, cubemap);
                 pixel_color = vec3_add(&pixel_color, &ray_col);
             }
 

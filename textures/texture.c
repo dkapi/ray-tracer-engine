@@ -72,6 +72,7 @@ void free_image_texture(image_texture_t* tex) {
     }
     free(tex);
 }
+
 color image_texture_value(const texture_t* self, double u, double v, const point3* p) {
     const image_texture_t* tex = (const image_texture_t*)self;
 
@@ -124,3 +125,5 @@ void free_noise_texture(noise_texture_t* noise_tex) {
     perlin_free(noise_tex->noise);
     free(noise_tex);
 }
+
+

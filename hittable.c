@@ -23,6 +23,15 @@ void hittable_list_add(hittable_list *list, hittable *object) {
     }
 }
 
+void hittable_list_merge(hittable_list *target, const hittable_list *source) {
+    if (target && source) {
+        for (size_t i = 0; i < source->objects->size; i++) {
+            hittable* object = (hittable*)source->objects->data[i];
+            hittable_list_add(target, object);
+        }
+    }
+}
+
 void hittable_list_destroy(hittable_list *list) {
     if (list) {
         darray_destroy(list->objects);

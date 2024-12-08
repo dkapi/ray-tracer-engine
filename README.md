@@ -26,12 +26,12 @@
 - Ray/Quads Intersection - 10
 - object instances - 10
 - volumes - 10
+- cube maps - 15
 
 ## TODO:
 - importance sampling (maybe) - 15
 - quadrics (maybe) - 15
-- cube maps (maybe) - 15
-- HDR (maybe) 
+- HDR (maybe) - 10
 
 
 

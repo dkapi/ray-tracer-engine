@@ -71,6 +71,7 @@ vec3 vec3_random_on_hemisphere(const vec3* normal);
 vec3 vec3_reflect(const vec3* u, const vec3* v);
 vec3 vec3_refract(const vec3* u, const vec3* v, double etai_over_etat);
 vec3 random_in_unit_disk();
+vec3 vec3_lerp(const vec3* a, const vec3* b, double t);
 
 
 #endif /* _VEC3_H_*/

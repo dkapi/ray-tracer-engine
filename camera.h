@@ -7,6 +7,7 @@
 #include "hittable.h"
 #include "bvh.h"
 #include "raster.h"
+#include "cube_map.h"
 
 
 typedef struct {
@@ -40,8 +41,8 @@ typedef struct {
 
 
 void camera_initialize(camera_t* c);
-void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster);
-color ray_color(const ray_t *r, int depth, const bvh_node_t* world, const color* background);
+void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap);
+color ray_color(const ray_t *r, int depth, const bvh_node_t* world, const color* background, const cubemap_t* cubemap);
 ray_t get_ray(const camera_t* camera, int i, int j);
 vec3 sample_square();
 

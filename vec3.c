@@ -172,3 +172,11 @@ inline vec3 random_in_unit_disk() {
     }
 }
 
+vec3 vec3_lerp(const vec3* a, const vec3* b, double t) {
+    return vec3_create_values(
+        a->x + t * (b->x - a->x),
+        a->y + t * (b->y - a->y),
+        a->z + t * (b->z - a->z)
+    );
+}
+
