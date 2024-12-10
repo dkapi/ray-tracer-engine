@@ -89,7 +89,7 @@ cubemap_t* create_cubemap(const char* file_paths[6]) {
 // }
 
 //sample the cubemap
-color cubemap_value(const cubemap_t* cubemap, const vec3* direction) {
+color sample_cubemap(const cubemap_t* cubemap, const vec3* direction) {
     vec3 dir = vec3_unit_vector(direction);
 
     int face_index;

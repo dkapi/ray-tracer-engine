@@ -25,14 +25,17 @@ typedef struct hit_record {
 
 // function pointer type for hit methods in hittable objects
 typedef bool (*hit_fn)(const void *self, const ray_t *r, interval_t ray, hit_record_t *rec);
-
 // function pointer type for calculating bounding boxes in hittable objects
 typedef bool (*bounding_box_fn)(const void *self, aabb_t *output_box);
+typedef double (*pdf_value_fn)(const void *self, const point3 *origin, const vec3 *direction);
+typedef vec3 (*random_fn)(const void *self, const point3 *origin);
 
 // hittable structure definition
-typedef struct {
+typedef struct hittable {
     hit_fn hit;  // function pointer for hit function
     bounding_box_fn bbox; // function pointer for bounding box function
+    pdf_value_fn pdf_value;
+    random_fn random;
 } hittable;
 
 // hittable list structure (dynamic array of hittable objects)
@@ -49,5 +52,10 @@ void hittable_list_destroy(hittable_list *list);
 bool hittable_list_hit(const hittable_list *list, const ray_t *r, interval_t ray, hit_record_t *rec);
 bool hittable_list_bounding_box(const hittable_list *list, aabb_t *output_box);
 void set_face_normal(hit_record_t *rec, const ray_t *r, const vec3 *outward_normal);
+
+double default_pdf_value(const void *self, const point3 *origin, const vec3 *direction);
+vec3 default_random(const void *self, const point3 *origin);
+double hittable_list_pdf_value(const hittable_list* list, const point3* origin, const vec3* direction);
+vec3 hittable_list_random(const hittable_list* list, const point3* origin);
 
 #endif /* HITTABLE_H */

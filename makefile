@@ -29,7 +29,9 @@ SRC = main.c \
 	  textures/perlin.c \
 	  triangle_mesh.c \
 	  cube_map.c \
-	  hdr.c 
+	  hdr.c \
+	  importance_sampling/pdf.c \
+	   importance_sampling/onb.c
 
 # Object files
 OBJ = $(SRC:.c=.o)

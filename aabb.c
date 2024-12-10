@@ -71,45 +71,24 @@ bool aabb_hit(const aabb_t* box, const ray_t* r, interval_t ray) {
     const point3* ray_orig = &(r->origin);
     const vec3* ray_dir = &(r->dir);
 
-    // iterate over each x , y , z, axis
+    // iterate over  x, y, z axies
     for (int axis = 0; axis < 3; axis++) {
-        // Get the interval for the current axis
         const interval_t* ax = aabb_axis_interval(box, axis);
-        double adinv;
-        double t0, t1;
 
-        // calculate intersection times for the current axis
-        switch (axis) {
-            case 0: // x-axis
-                adinv = 1.0 / ray_dir->x;
-                t0 = (ax->min - ray_orig->x) * adinv;
-                t1 = (ax->max - ray_orig->x) * adinv;
-                break;
-            case 1: // y-axis
-                adinv = 1.0 / ray_dir->y;
-                t0 = (ax->min - ray_orig->y) * adinv;
-                t1 = (ax->max - ray_orig->y) * adinv;
-                break;
-            case 2: // z-axis
-                adinv = 1.0 / ray_dir->z;
-                t0 = (ax->min - ray_orig->z) * adinv;
-                t1 = (ax->max - ray_orig->z) * adinv;
-                break;
-            default:
-                return false; // default should never happen
-        }
+        double adinv = 1.0 / ((axis == 0) ? ray_dir->x : (axis == 1) ? ray_dir->y : ray_dir->z);
+        double t0 = (ax->min - ((axis == 0) ? ray_orig->x : (axis == 1) ? ray_orig->y : ray_orig->z)) * adinv;
+        double t1 = (ax->max - ((axis == 0) ? ray_orig->x : (axis == 1) ? ray_orig->y : ray_orig->z)) * adinv;
 
-        if (t0 > t1) {
+        if (adinv < 0.0) { // swap t0 and t1 if the ray direction is negative
             double temp = t0;
             t0 = t1;
             t1 = temp;
         }
 
-        // update the ray interval with the new t0 and t1 values
-        if (t0 > ray.min) ray.min = t0;
-        if (t1 < ray.max) ray.max = t1;
+        ray.min = fmax(ray.min, t0);
+        ray.max = fmin(ray.max, t1);
 
-        // ray misses box if ray interval is invlid
+        // we exit early if the ray misses the box
         if (ray.max <= ray.min) {
             return false;
         }

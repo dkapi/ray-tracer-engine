@@ -72,6 +72,9 @@ bvh_node_t* bvh_node_init(hittable **objects, size_t start, size_t end) {
     aabb_t bbox = aabb_create_empty();
     for (size_t i = start; i < end; ++i) {
         aabb_t temp_box;
+        if (!objects[i]->bbox(objects[i], &temp_box)) {
+            continue;
+        }
         bbox = aabb_create_with_boxes(&bbox, &temp_box);
     }
 

@@ -9,6 +9,7 @@
 #include "raster.h"
 #include "cube_map.h"
 #include "hdr.h"
+#include "importance_sampling/pdf.h"
 
 
 typedef struct {
@@ -42,8 +43,8 @@ typedef struct {
 
 
 void camera_initialize(camera_t* c);
-void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap, const hdr_texture_t* hdr);
-color ray_color(const ray_t *r, int depth, const bvh_node_t* world, const color* background, const cubemap_t* cubemap, const hdr_texture_t* hdr);
+void render(const camera_t* camera, bvh_node_t* world, hittable_list* lights, pixel_t** raster, const cubemap_t* cubemap, const hdr_texture_t* hdr);
+color ray_color(const ray_t *r, int depth, const bvh_node_t* world, hittable_list* lights, const color* background, const cubemap_t* cubemap, const hdr_texture_t* hdr);
 ray_t get_ray(const camera_t* camera, int i, int j);
 vec3 sample_square();
 

@@ -180,3 +180,12 @@ vec3 vec3_lerp(const vec3* a, const vec3* b, double t) {
     );
 }
 
+vec3 vec3_clamp(const vec3 *v, double min, double max) {
+    interval_t interval = {.min = min, .max = max};
+    return vec3_create_values(
+        interval_clamp(&interval, v->x),
+        interval_clamp(&interval, v->y),
+        interval_clamp(&interval, v->z)
+    );
+}
+

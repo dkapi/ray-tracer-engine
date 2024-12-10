@@ -8,6 +8,8 @@ quads_t* quad_create(const point3* Q, const vec3* u, const vec3* v, material_t* 
     quad->mat = mat;
     quad->base.bbox = (bounding_box_fn)quad_bounding_box;
     quad->base.hit = (hit_fn)hit_quad;
+    quad->base.pdf_value = (pdf_value_fn)quad_pdf_value;
+    quad->base.random = (random_fn)quad_random;
 
     // Compute normal, D, and w
     vec3 tempcross = vec3_cross(u, v);
@@ -17,6 +19,9 @@ quads_t* quad_create(const point3* Q, const vec3* u, const vec3* v, material_t* 
     vec3 n = vec3_cross(u, v);
     double n_dot_n = vec3_dot(&n, &n);
     quad->w = vec3_divide_by_scalar(&n, n_dot_n);
+
+        // Compute area
+    quad->area = vec3_length(&tempcross);
 
     // computing bounding box
     point3 corner1 = *Q;                     // bottom-left corner
@@ -69,6 +74,7 @@ bool quad_bounding_box(const quads_t* quad, aabb_t* output_box) {
     return true;
 }
 
+
 bool hit_quad(const quads_t* quad, const ray_t* r, interval_t ray, hit_record_t* rec) {
     double denom = vec3_dot(&quad->normal, &r->dir);
     // check if ray is parallel to plane
@@ -90,7 +96,7 @@ bool hit_quad(const quads_t* quad, const ray_t* r, interval_t ray, hit_record_t*
     tempcross = vec3_cross(&quad->u, &planar_hitpt_vector);
     double beta = vec3_dot(&quad->w, &tempcross);
 
-    if (!quad_is_interior(alpha, beta, rec)) {
+    if (!quad_is_interior(alpha, beta, rec)) {    
         return false;
     }
 
@@ -109,10 +115,37 @@ bool quad_is_interior(double alpha, double beta, hit_record_t* rec) {
     interval_t unit_interval = interval_create(0, 1);
 
     if (!interval_contains(&unit_interval, alpha) || !interval_contains(&unit_interval, beta)) {
+       // printf("Ray missed quad: alpha=%f, beta=%f\n", alpha, beta);
         return false;
     }
 
     rec->u = alpha;
     rec->v = beta;
     return true;
+}
+
+
+double quad_pdf_value(const quads_t* quad, const point3* origin, const vec3* direction) {
+    vec3 unit_direction = vec3_unit_vector(direction);
+    ray_t r = ray_create(origin, &unit_direction, 0.0);
+    hit_record_t rec;
+
+    if (!hit_quad(quad, &r, interval_create(0.001, INFINITY), &rec)) return 0.0;
+
+    double distance_squared = rec.t * rec.t * vec3_length_squared(direction);
+    double cosine = fabs(vec3_dot(direction, &rec.normal) / vec3_length(direction));
+    if (cosine < 1e-8) {
+    printf("Quad PDF cosine too small: %f\n", cosine);
+    return 0.0;
+}
+
+    return distance_squared / (cosine * quad->area);
+}
+
+vec3 quad_random(const quads_t* quad, const point3* origin) {
+    vec3 u_scaled = vec3_multiply_by_scalar(&quad->u, random_double());
+    vec3 v_scaled = vec3_multiply_by_scalar(&quad->v, random_double());
+    vec3 u_plus_v = vec3_add(&u_scaled, &v_scaled);
+    vec3 random_point = vec3_add(&quad->Q, &u_plus_v);
+    return vec3_subtract(&random_point, origin);
 }

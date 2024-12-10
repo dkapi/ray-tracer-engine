@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "interval.h"
 
 #define PI (const double) 3.1415926535897932386
 
@@ -72,6 +73,7 @@ vec3 vec3_reflect(const vec3* u, const vec3* v);
 vec3 vec3_refract(const vec3* u, const vec3* v, double etai_over_etat);
 vec3 random_in_unit_disk();
 vec3 vec3_lerp(const vec3* a, const vec3* b, double t);
+vec3 vec3_clamp(const vec3 *v, double min, double max);
 
 
 #endif /* _VEC3_H_*/

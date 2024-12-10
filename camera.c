@@ -58,44 +58,82 @@ void camera_initialize(camera_t* c) {
 } 
 
 // ray color function
-color ray_color(const ray_t *r, int depth ,const bvh_node_t* world, const color* background, const cubemap_t* cubemap, const hdr_texture_t* hdr) {
-    //max depth check
-    if(depth <= 0) {
-        return vec3_create_values(0,0,0);
+color ray_color(const ray_t *r, int depth, const bvh_node_t *world, hittable_list *lights, const color *background, const cubemap_t *cubemap, const hdr_texture_t *hdr) {
+    // Base case: terminate recursion
+    if (depth <= 0) {
+        return vec3_create_values(0, 0, 0);
     }
 
     hit_record_t rec;
-    
-    // Check if the ray hits anything in the world
-    if (hit_bvh_node(world, r, interval_create(0.001, INFINITY), &rec)) {
-        ray_t scattered;
-        color attenuation;
-        color emitted = rec.mat->emitted(rec.mat, rec.u, rec.v, &rec.p);
 
-        if (rec.mat->scatter(rec.mat, r, &rec, &attenuation, &scattered)) {
-            color scattered_color = ray_color(&scattered, depth -1, world, background, cubemap, hdr);
-            return vec3_multiply(&attenuation, &scattered_color);
+    // If the ray misses the world, return background
+    if (!hit_bvh_node(world, r, interval_create(0.001, INFINITY), &rec)) {
+        if (cubemap) {
+            vec3 dir = vec3_unit_vector(&r->dir);
+            return sample_cubemap(cubemap, &dir);
         }
-        return emitted;
-    }
-    /**
-     * return cubemap sample,
-     * else check for hdr and return,
-     * else return background as default
-     */
-    if (cubemap) {
-        vec3 dir = vec3_unit_vector(&r->dir);
-        return cubemap_value(cubemap, &dir);
-    } 
-    if(hdr) {
-    vec3 dir = vec3_unit_vector(&r->dir);
-    double u, v;
-    direction_to_uv(&dir, &u, &v);
-    return sample_hdr(hdr, u, v);
+        if (hdr) {
+            vec3 dir = vec3_unit_vector(&r->dir);
+            double u, v;
+            direction_to_uv(&dir, &u, &v);
+            return sample_hdr(hdr, u, v);
+        }
+        return *background;
     }
 
-    return *background;
+    // Emitted light
+    color color_from_emission = (rec.mat && rec.mat->emitted) 
+        ? rec.mat->emitted(rec.mat, r, &rec, rec.u, rec.v, &rec.p)
+        : vec3_create_values(0, 0, 0);
+
+    // If scattering fails, return emitted light only
+    scatter_record_t srec;
+    if (!rec.mat || !rec.mat->scatter(rec.mat, r, &rec, &srec)) {
+        return color_from_emission;
+    }
+
+    // Handle skip_pdf case
+    if (srec.skip_pdf) {
+        color ray_color_returned = ray_color(&srec.skip_pdf_ray, depth - 1, world, lights, background, cubemap, hdr);
+        return vec3_multiply(&srec.attenuation, &ray_color_returned);
+    }
+
+    // Create a mixture PDF with the lights and material scattering PDF
+    pdf_t* light_pdf = hittable_pdf_create((const hittable*)&lights->base, &rec.p);
+    pdf_t* mixture_pdf = (pdf_t*)mixture_pdf_create(light_pdf, srec.pdf_ptr);
+
+    // Generate a scattered direction using the mixture PDF
+    vec3 scatter_direction = mixture_pdf->generate(mixture_pdf);
+    ray_t scattered = ray_create(&rec.p, &scatter_direction, r->time);
+    double pdf_value = mixture_pdf->value(mixture_pdf, &scatter_direction);
+
+    // Free the allocated PDFs
+    hittable_pdf_free((hittable_pdf_t*)light_pdf);
+    mixture_pdf_free((mixture_pdf_t*)mixture_pdf);
+
+    // Scattering PDF
+    double scattering_pdf = rec.mat->scattering_pdf 
+        ? rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered) 
+        : pdf_value;
+
+    // Recursive ray trace
+    color sample_color = ray_color(&scattered, depth - 1, world, lights, background, cubemap, hdr);
+
+    // Calculate light contribution from scattering
+    color color_from_scatter = vec3_multiply_by_scalar(&sample_color, scattering_pdf / pdf_value);
+    color contribution = vec3_multiply(&srec.attenuation, &color_from_scatter);
+
+    // Add emitted and scattered light
+    return vec3_add(&color_from_emission, &contribution);
 }
+
+
+
+
+
+
+
+
 
 
 // returns the vector to a random point in the [-.5, -.5]-[+.5, +.5] unit square.
@@ -159,7 +197,7 @@ void display_progress(int completed, int total) {
 }
 
 
-void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap, const hdr_texture_t* hdr) {
+void render(const camera_t* camera, bvh_node_t* world, hittable_list* lights, pixel_t** raster, const cubemap_t* cubemap, const hdr_texture_t* hdr) {
     int total_pixels = camera->image_height * camera->image_width;
     int completed_pixels = 0;
 
@@ -171,7 +209,7 @@ void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const c
             color pixel_color = vec3_create_values(0, 0, 0);
             for (int sample = 0; sample < camera->samples_per_pixel; ++sample) {
                 ray_t r = get_ray(camera, x, y);
-                color ray_col = ray_color(&r, camera->max_depth, world, &camera->background, cubemap, hdr);
+                color ray_col = ray_color(&r, camera->max_depth, world, lights, &camera->background, cubemap, hdr);
                 pixel_color = vec3_add(&pixel_color, &ray_col);
             }
 
@@ -181,7 +219,7 @@ void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const c
             // write the final color to the raster
             write_color(&raster[y][x], pixel_color);
 
-            // Progress bar update
+            // progress bar update
             //atomic flag since each thread has access to completed_pixels variable
             #pragma omp atomic
             completed_pixels++;

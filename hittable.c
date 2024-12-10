@@ -7,6 +7,8 @@ hittable_list* hittable_list_create() {
         list->objects = darray_create();
         list->base.hit = (hit_fn)hittable_list_hit;
         list->base.bbox = (bounding_box_fn)hittable_list_bounding_box;
+        list->base.pdf_value = (pdf_value_fn)default_pdf_value;
+        list->base.random = (random_fn)default_random; 
         list->bbox = aabb_create_empty();
     }
     return list;
@@ -107,4 +109,40 @@ void set_face_normal(hit_record_t *rec, const ray_t *r, const vec3 *outward_norm
     } else {
         rec->normal = vec3_multiply_by_scalar(outward_normal, -1);
     }
+}
+
+
+
+double default_pdf_value(const void *self, const point3 *origin, const vec3 *direction) {
+    return 0.0;
+}
+
+vec3 default_random(const void *self, const point3 *origin) {
+    // Return a default direction (can be improved for specific use cases)
+    return vec3_create_values(1, 0, 0);
+}
+
+double hittable_list_pdf_value(const hittable_list* list, const point3* origin, const vec3* direction) {
+    double weight = 1.0 / darray_size(list->objects);
+    double sum = 0.0;
+
+    for (int i = 0; i < darray_size(list->objects); i++) {
+        hittable* object = (hittable*)darray_get(list->objects, i);
+        if (object && object->pdf_value) {
+            sum += weight * object->pdf_value(object, origin, direction);
+        }
+    }
+
+    return sum;
+}
+
+vec3 hittable_list_random(const hittable_list* list, const point3* origin) {
+    int index = (int)(random_double() * darray_size(list->objects));
+    hittable* object = (hittable*)darray_get(list->objects, index);
+
+    if (object && object->random) {
+        return object->random(object, origin);
+    }
+
+    return vec3_create_values(1, 0, 0); // Default direction
 }
