@@ -25,7 +25,6 @@ vec3 cosine_pdf_generate(const pdf_t* pdf) {
 
 cosine_pdf_t* cosine_pdf_create(const vec3 *normal) {
     cosine_pdf_t* pdf = (cosine_pdf_t*)malloc(sizeof(cosine_pdf_t));
-    if (!pdf) return NULL;
 
     pdf->base.value = cosine_pdf_value;
     pdf->base.generate = cosine_pdf_generate;

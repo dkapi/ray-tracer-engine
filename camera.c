@@ -81,63 +81,57 @@ color ray_color(const ray_t *r, int depth, const bvh_node_t *world, hittable_lis
         return *background;
     }
 
-    // Emitted light
-    color color_from_emission = (rec.mat && rec.mat->emitted) 
-        ? rec.mat->emitted(rec.mat, r, &rec, rec.u, rec.v, &rec.p)
-        : vec3_create_values(0, 0, 0);
+    // Emitted light from the material
+     color color_from_emission = rec.mat->emitted(rec.mat, r, &rec, rec.u, rec.v, &rec.p);
 
-    // If scattering fails, return emitted light only
+    // If the material doesn't scatter, return emitted light only
     scatter_record_t srec;
-    if (!rec.mat || !rec.mat->scatter(rec.mat, r, &rec, &srec)) {
+    if (!rec.mat->scatter(rec.mat, r, &rec, &srec)) {
         return color_from_emission;
     }
 
-    // Handle skip_pdf case
+    // If skip_pdf is true, handle the special case
     if (srec.skip_pdf) {
-        color ray_color_returned = ray_color(&srec.skip_pdf_ray, depth - 1, world, lights, background, cubemap, hdr);
-        return vec3_multiply(&srec.attenuation, &ray_color_returned);
+        color next_ray_color = ray_color(&srec.skip_pdf_ray, depth - 1, world, lights, background, cubemap, hdr);
+        vec3 attennuation_scaled = vec3_multiply(&srec.attenuation, &next_ray_color);
+        return vec3_add(&color_from_emission, &attennuation_scaled);
     }
 
-    // Create a mixture PDF with the lights and material scattering PDF
-    pdf_t* light_pdf = hittable_pdf_create((const hittable*)&lights->base, &rec.p);
-    pdf_t* mixture_pdf = (pdf_t*)mixture_pdf_create(light_pdf, srec.pdf_ptr);
+    // Use a mixture of the light PDF and material scattering PDF
+    pdf_t *light_pdf = hittable_pdf_create((const hittable *)&lights->base, &rec.p);
+    pdf_t *mixture_pdf = (pdf_t *)mixture_pdf_create(light_pdf, srec.pdf_ptr);
 
-    // Generate a scattered direction using the mixture PDF
     vec3 scatter_direction = mixture_pdf->generate(mixture_pdf);
     ray_t scattered = ray_create(&rec.p, &scatter_direction, r->time);
-scatter_direction = vec3_unit_vector(&scatter_direction);
 
-// Validate the scattered direction
-if (isnan(scatter_direction.x) || isnan(scatter_direction.y) || isnan(scatter_direction.z)) {
-    return vec3_create_values(0, 0, 0); // Fallback to black
+    double pdf_value = mixture_pdf->value(mixture_pdf, &scatter_direction);
+
+    // Ensure the PDF value is never zero to avoid invalid results
+    if (pdf_value <= 0 || isnan(pdf_value)) {
+        pdf_value = 1e-8;
+    }
+
+    double scattering_pdf = rec.mat->scattering_pdf
+        ? rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered)
+        : pdf_value;
+
+    // Recursive ray tracing for the scattered ray
+    color next_ray_color = ray_color(&scattered, depth - 1, world, lights, background, cubemap, hdr);
+
+    // Calculate light contribution from scattering
+    color scattered_contribution = vec3_multiply_by_scalar(&next_ray_color, scattering_pdf / pdf_value);
+    color total_scattered = vec3_multiply(&srec.attenuation, &scattered_contribution);
+
+    // Combine emitted and scattered light
+    color final_color = vec3_add(&color_from_emission, &total_scattered);
+
+    // Free the PDFs to avoid memory leaks
+    hittable_pdf_free((hittable_pdf_t *)light_pdf);
+    mixture_pdf_free((mixture_pdf_t *)mixture_pdf);
+
+    return final_color;
 }
 
-// Compute the PDF value
-double pdf_value = mixture_pdf->value(mixture_pdf, &scatter_direction);
-if (pdf_value <= 0 || isnan(pdf_value)) {
-    pdf_value = 1e-8; // Avoid invalid or zero PDF
-}
-
-// Scattering PDF
-double scattering_pdf = rec.mat->scattering_pdf 
-    ? rec.mat->scattering_pdf(rec.mat, r, &rec, &scattered) 
-    : pdf_value;
-
-// Ensure scattering_pdf is valid
-if (scattering_pdf <= 0 || isnan(scattering_pdf)) {
-    scattering_pdf = 1e-8; // Avoid invalid scattering PDF
-}
-
-// Recursive ray trace
-color sample_color = ray_color(&scattered, depth - 1, world, lights, background, cubemap, hdr);
-
-// Calculate light contribution from scattering
-color color_from_scatter = vec3_multiply_by_scalar(&sample_color, scattering_pdf / pdf_value);
-color contribution = vec3_multiply(&srec.attenuation, &color_from_scatter);
-
-// Add emitted and scattered light
-return vec3_add(&color_from_emission, &contribution);
-}
 
 
 

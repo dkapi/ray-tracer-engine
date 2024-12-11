@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
     camera_t camera = {0};
     camera.aspect_ratio      = 1.0;
     camera.image_width       = 600;  
-    camera.samples_per_pixel = 10; 
+    camera.samples_per_pixel = 1000; 
     camera.max_depth         = 50;
     camera.vfov              = 40;  
     camera.lookfrom          = (point3){278, 278, -800};
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     // First box
     point3 box1_min = (point3){0, 0, 0};
     point3 box1_max = (point3){165, 330, 165};
-    hittable* box1 = create_box(&box1_min, &box1_max, aluminum);
+    hittable* box1 = create_box(&box1_min, &box1_max, white);
     hittable* rotated_box1 = (hittable*)rotate_object_y(box1, 15);
     hittable* translated_box1 = (hittable*)translate_object(rotated_box1, &(vec3){265, 0, 295});
     hittable_list_add(world, translated_box1);

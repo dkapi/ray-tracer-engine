@@ -16,7 +16,7 @@ static color default_emitted(const material_t* mat, const ray_t* r_in, const hit
 
 // Default scattering PDF (no contribution)
 static double default_scattering_pdf(const material_t* mat, const ray_t* r_in, const hit_record_t* rec, const ray_t* scattered) {
-    return 0.0;
+    return 1.0;
 }
 
 // Lambertian scattering PDF
