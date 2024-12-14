@@ -6,10 +6,10 @@
 
 
 typedef struct bvh_node {
-    hittable base;            // Base hittable structure, must be first
-    hittable *left;           // Pointer to left child (another hittable)
-    hittable *right;          // Pointer to right child (another hittable)
-    aabb_t bbox;              // Bounding box for this BVH node
+    hittable base;            // Bbse hittable structure, must be first
+    hittable *left;           // pointer to left child (another hittable)
+    hittable *right;          // pointer to right child (another hittable)
+    aabb_t bbox;              // bounding box for this BVH node
 } bvh_node_t;
 
 // Function prototypes

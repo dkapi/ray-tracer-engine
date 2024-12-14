@@ -28,7 +28,6 @@ typedef struct {
 
 // functions
 cubemap_t* create_cubemap(const char* file_paths[6]);
-cubemap_t* create_cubemap_from_single_image(const char* filepath, int layout);
 color cubemap_value(const cubemap_t* cubemap, const vec3* direction);
 void destroy_cubemap(cubemap_t* cubemap);
 

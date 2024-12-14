@@ -28,7 +28,7 @@ static int* perlin_generate_perm() {
 static vec3* perlin_generate_vectors() {
     vec3* vectors = (vec3*)malloc(PERLIN_POINT_COUNT * sizeof(vec3));
     for (int i = 0; i < PERLIN_POINT_COUNT; i++) {
-        vectors[i] = random_unit_vector();  // Ensure this call exists
+        vectors[i] = random_unit_vector();
     }
     return vectors;
 }
@@ -63,6 +63,7 @@ perlin_t* perlin_create() {
     return perlin;
 }
 
+//trilinear interpolation
 double perlin_noise(const perlin_t* perlin, const point3* p) {
     int i = (int)floor(p->x) & 255;
     int j = (int)floor(p->y) & 255;

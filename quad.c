@@ -9,7 +9,7 @@ quads_t* quad_create(const point3* Q, const vec3* u, const vec3* v, material_t* 
     quad->base.bbox = (bounding_box_fn)quad_bounding_box;
     quad->base.hit = (hit_fn)hit_quad;
 
-    // Compute normal, D, and w
+    // compute normal, D, and w
     vec3 tempcross = vec3_cross(u, v);
     quad->normal = vec3_unit_vector(&tempcross);
     quad->D = vec3_dot(&quad->normal, Q);
@@ -129,7 +129,7 @@ bool hit_quad(const quads_t* quad, const ray_t* r, interval_t ray, hit_record_t*
         return false;
     }
 
-    // Set hit record
+    // set hit record
     rec->t = t;
     rec->p = intersection;
     rec->mat = quad->mat;

@@ -4,7 +4,7 @@
 #include "hittable.h"
 #include "vec3.h"
 
-// Sphere structure that includes hittable as a base class
+// sphere structure 
 typedef struct {
     hittable base;     // make sure to always have base first
     point3 center;

@@ -1,6 +1,6 @@
 #include "aabb.h"
 
-#define AABB_MIN_DELTA 0.0001  // Minimum size for each interval
+#define AABB_MIN_DELTA 0.0001  // minimum size for each interval
 
 static void aabb_pad_to_minimums(aabb_t *box) {
     if (interval_size(&box->x) < AABB_MIN_DELTA) {

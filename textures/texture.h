@@ -20,7 +20,7 @@ typedef struct solid_color {
 
 // checker texture struct
 typedef struct checker_texture {
-    texture_t base;             // base interface
+    texture_t base;             // base keep ffirst
     double inv_scale;           // inverse scale for the checker pattern
     texture_t *even;            // pointer to the "even" texture
     texture_t *odd;             // pointer to the "odd" texture
@@ -28,7 +28,7 @@ typedef struct checker_texture {
 
 // image texture struct
 typedef struct {
-    texture_t base;      // base interface
+    texture_t base;      // base keep first
     unsigned char* data; // image data (RGB or RGBA)
     int width, height;   // dimensions of the image
     int bytes_per_pixel; // number of channels per pixel (e.g., 3 for RGB, 4 for RGBA)

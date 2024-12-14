@@ -14,32 +14,32 @@ void camera_initialize(camera_t* c) {
     // cam position and cam frame vectors
     c->camera_center = c->lookfrom;
 
-    // Calculate focal length
+    // calculate focal length
     vec3 temp_sub = vec3_subtract(&c->lookfrom, &c->lookat);
     c->focal_length = vec3_length(&temp_sub);
 
     double theta = degrees_to_radians(c->vfov);
     double h = tan(theta / 2.0);
 
-    // Set viewport dimensions based on focus distance
+    // set viewport dimensions based on focus distance
     c->viewport_height = 2 * h * c->focus_dist;
     c->viewport_width = c->viewport_height * ((double) c->image_width / c->image_height);
 
-    // Calculate camera frame basis vectors
+    // calculate camera frame basis vectors
     c->w = vec3_unit_vector(&temp_sub);
     vec3 crosstmp = vec3_cross(&c->vup, &c->w);
     c->u = vec3_unit_vector(&crosstmp);
     c->v = vec3_cross(&c->w, &c->u);
 
-    // Calculate the vectors across the horizontal and down the vertical viewport edges
+    // calculate the vectors across the horizontal and down the vertical viewport edges
     c->viewport_u = vec3_multiply_by_scalar(&c->u, c->viewport_width);
     c->viewport_v = vec3_multiply_by_scalar(&c->v, c->viewport_height);
 
-    // Calculate the horizontal and vertical delta vectors from pixel to pixel
+    // calculate the horizontal and vertical delta vectors from pixel to pixel
     c->pixel_delta_u = vec3_divide_by_scalar(&c->viewport_u, c->image_width);
     c->pixel_delta_v = vec3_divide_by_scalar(&c->viewport_v, c->image_height);
 
-    // Calculate the location of the upper left pixel
+    // calculate the location of the upper left pixel
     vec3 focal_length_vec = vec3_multiply_by_scalar(&c->w, c->focus_dist);
     vec3 viewport_upper_left = vec3_subtract(&c->camera_center, &focal_length_vec);
     vec3 divide_temp1 = vec3_divide_by_scalar(&c->viewport_u, 2);
@@ -51,7 +51,8 @@ void camera_initialize(camera_t* c) {
     vec3 half_pixel_delta = vec3_multiply_by_scalar(&pixel_delta_sum, 0.5);
     c->pixel_00_loc = vec3_add(&viewport_upper_left, &half_pixel_delta);
 
-    // Calculate defocus disk basis vectors
+    // calculate defocus disk basis vectors
+    /********* Defocus blur disk ********/
     double defocus_radius = c->focus_dist * tan(degrees_to_radians(c->defocus_angle / 2.0));
     c->defocus_disk_u = vec3_multiply_by_scalar(&c->u, defocus_radius);
     c->defocus_disk_v = vec3_multiply_by_scalar(&c->v, defocus_radius);
@@ -104,6 +105,15 @@ vec3 sample_square() {
     return vec3_create_values(random_double() - 0.5, random_double() - 0.5, 0.0);
 }
 
+// returns the vector to a random point within a circle of radius 0.5 centered at the origin
+// for round pixels
+static vec3 sample_circle() {
+    float r = sqrt(random_double()) * 0.5; // scale radius to fit within [-0.5, 0.5]
+    float theta = random_double() * 2.0 * PI; // random angle
+    return vec3_create_values(r * cos(theta), r * sin(theta), 0.0);
+}
+
+
 static point3 defocus_disk_sample(const camera_t* camera) {
     vec3 p = random_in_unit_disk();
 
@@ -115,9 +125,14 @@ static point3 defocus_disk_sample(const camera_t* camera) {
 }
 
 
-// constructs a ray originating from the camera center and directed at a sampled point near pixel i, j
-ray_t get_ray(const camera_t* camera, int i, int j) {
-    vec3 offset = sample_square();
+// constructs a ray originating from the camera center and directed at a sampled poin
+ray_t get_ray(const camera_t* camera, int i, int j, bool round_pixels) {
+    vec3 offset;
+    if(round_pixels) {
+        offset = sample_circle();
+    } else {
+        offset = sample_square();
+    }
 
     // calculate the sampled pixel location
     vec3 i_scaled = vec3_multiply_by_scalar(&camera->pixel_delta_u, (double)(i) + offset.x);
@@ -158,8 +173,12 @@ void display_progress(int completed, int total) {
     fflush(stdout);
 }
 
+// static float random_float(float min, float max) {
+//     return min + ((float)rand() / RAND_MAX) * (max - min);
+// }
 
-void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap, const hdr_texture_t* hdr) {
+
+void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const cubemap_t* cubemap, const hdr_texture_t* hdr, bool round_pixels) {
     int total_pixels = camera->image_height * camera->image_width;
     int completed_pixels = 0;
 
@@ -170,7 +189,7 @@ void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const c
             // accumulate color for each pixel by sampling multiple times
             color pixel_color = vec3_create_values(0, 0, 0);
             for (int sample = 0; sample < camera->samples_per_pixel; ++sample) {
-                ray_t r = get_ray(camera, x, y);
+                ray_t r = get_ray(camera, x, y, round_pixels);
                 color ray_col = ray_color(&r, camera->max_depth, world, &camera->background, cubemap, hdr);
                 pixel_color = vec3_add(&pixel_color, &ray_col);
             }
@@ -196,3 +215,4 @@ void render(const camera_t* camera, bvh_node_t* world, pixel_t** raster, const c
     display_progress(total_pixels, total_pixels);
     printf("\n");
 }
+

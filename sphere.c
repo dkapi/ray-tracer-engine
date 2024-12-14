@@ -13,7 +13,7 @@ sphere_t* sphere_create(const point3 *center, double radius, material_t* mat) {
     s->radius = radius;
     s->mat = mat;
 
-    // Correctly calculate the bounding box
+    //alculate the bounding box
     vec3 offset = vec3_create_values(radius, radius, radius);
     point3 min = vec3_subtract(center, &offset);
     point3 max = vec3_add(center, &offset);

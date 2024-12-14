@@ -11,8 +11,8 @@ triangle_t* create_triangle(const point3* a, const point3* b, const point3* c, m
     triangle->b = *b;
     triangle->c = *c;
     triangle->mat = mat;
-    triangle->base.hit = (hit_fn)hit_triangle;  // assign hit function pointer
-    triangle->base.bbox = (bounding_box_fn)triangle_bounding_box; // assign bounding box function
+    triangle->base.hit = (hit_fn)hit_triangle;  //hit function pointer
+    triangle->base.bbox = (bounding_box_fn)triangle_bounding_box; //bounding box function
 
     triangle->bbox.x = interval_create(fmin(a->x, fmin(b->x, c->x)), fmax(a->x, fmax(b->x, c->x)));
     triangle->bbox.y = interval_create(fmin(a->y, fmin(b->y, c->y)), fmax(a->y, fmax(b->y, c->y)));
@@ -31,8 +31,8 @@ triangle_t* create_triangle_uv(const point3* a, const point3* b, const point3* c
     triangle->uv_b = *uv_b;
     triangle->uv_c = *uv_c;
     triangle->mat = mat;
-    triangle->base.hit = (hit_fn)hit_triangle;  // assign the hit function pointer
-    triangle->base.bbox = (bounding_box_fn)triangle_bounding_box; // assign bounding box function
+    triangle->base.hit = (hit_fn)hit_triangle;  // hit function pointer
+    triangle->base.bbox = (bounding_box_fn)triangle_bounding_box; //bounding box function
 
     triangle->bbox.x = interval_create(fmin(a->x, fmin(b->x, c->x)), fmax(a->x, fmax(b->x, c->x)));
     triangle->bbox.y = interval_create(fmin(a->y, fmin(b->y, c->y)), fmax(a->y, fmax(b->y, c->y)));
@@ -93,8 +93,8 @@ bool hit_triangle(const triangle_t* tri, const ray_t* r, interval_t ray, hit_rec
     rec->mat = tri->mat;
 
 
-    // compute interpolated texture coordinates (u, v)
-    double bary0 = 1.0 - bary1 - bary2; // the third barycentric coordinate
+    // compute  texture coordinates (u, v)
+    double bary0 = 1.0 - bary1 - bary2;
     rec->u = bary0 * tri->uv_a.x + bary1 * tri->uv_b.x + bary2 * tri->uv_c.x;
     rec->v = bary0 * tri->uv_a.y + bary1 * tri->uv_b.y + bary2 * tri->uv_c.y;
 

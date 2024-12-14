@@ -28,10 +28,15 @@
 - volumes - 10
 - cube maps - 15
 - HDR - 10
+- Round Pixels - 20
 
-## TODO:
-- importance sampling (maybe) - 15
-- quadrics (maybe) - 15
+
+##  to run
+- run "make" command
+- run executable  named ./engine
+- optional flags
+    - <num> where num is number of cores for parellelization
+- scen must be in main.c
 
 
 

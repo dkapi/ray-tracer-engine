@@ -1,4 +1,5 @@
 #include  "texture.h"
+//3rd party library 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -31,7 +32,7 @@ color checker_texture_value(const texture_t *self, double u, double v, const poi
 
 checker_texture_t* create_checker_texture(double scale, texture_t *even, texture_t *odd) {
      checker_texture_t* ct = (checker_texture_t*)malloc(sizeof(checker_texture_t));
-    ct->base.value = (texture_value_fn)checker_texture_value; // function pointer assignment
+    ct->base.value = (texture_value_fn)checker_texture_value;
     ct->inv_scale = 1.0 / scale;
     ct->even = even;
     ct->odd = odd;
@@ -43,7 +44,7 @@ checker_texture_t* create_checker_texture_solid(double scale, color c1, color c2
     texture_t* odd  = (texture_t*)create_solid_color(c2.x, c2.y, c2.z);
 
     checker_texture_t* checker = (checker_texture_t*)malloc(sizeof(checker_texture_t));
-    checker->base.value = checker_texture_value; // Assign function pointer
+    checker->base.value = checker_texture_value;
     checker->inv_scale = 1.0 / scale;
     checker->even = even;
     checker->odd = odd;
@@ -63,7 +64,7 @@ image_texture_t* create_image_texture(const char* filename) {
         return NULL;
     }
 
-    tex->base.value = (texture_value_fn)image_texture_value; // assign function pointer
+    tex->base.value = (texture_value_fn)image_texture_value;
     return tex;
 }
 void free_image_texture(image_texture_t* tex) {
@@ -88,7 +89,7 @@ color image_texture_value(const texture_t* self, double u, double v, const point
 
     const int index = j * tex->width * tex->bytes_per_pixel + i * tex->bytes_per_pixel;
 
-    // extract pixel data and convert to [0, 1] range
+    //convert pixel  data to [0,1]
     double r = tex->data[index] / 255.0;
     double g = tex->data[index + 1] / 255.0;
     double b = tex->data[index + 2] / 255.0;
@@ -97,6 +98,7 @@ color image_texture_value(const texture_t* self, double u, double v, const point
 }
 
 // perlin noise textures
+// can change  type of perlin effect here, right now sin turbulence, so like marbling effect
 color noise_texture_value(const texture_t* self, double u, double v, const point3* p) {
     const noise_texture_t* noise_tex = (const noise_texture_t*)self;
 
@@ -113,9 +115,9 @@ color noise_texture_value(const texture_t* self, double u, double v, const point
 noise_texture_t* create_noise_texture(double scale) {
     noise_texture_t* noise_tex = (noise_texture_t*)malloc(sizeof(noise_texture_t));
 
-    noise_tex->base.value = (texture_value_fn)noise_texture_value; // typical function pointer assignment
-    noise_tex->noise = perlin_create();                           // initializing perlin noise
-    noise_tex->scale = scale;                                     // setting scale of noise
+    noise_tex->base.value = (texture_value_fn)noise_texture_value; 
+    noise_tex->noise = perlin_create(); 
+    noise_tex->scale = scale; 
 
     return noise_tex;
 }

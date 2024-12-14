@@ -22,25 +22,18 @@ typedef struct vec3{
     double z;
 } vec3;
 
-// Constructors
 vec3 vec3_create();
 vec3 vec3_create_values(double e0, double e1, double e2);
 
-// Accessors
-double vec3_x(const vec3 *v);
-double vec3_y(const vec3 *v);
-double vec3_z(const vec3 *v);
-
-// Operator functions
 vec3 vec3_negate(const vec3 *v);
 void vec3_multiply_scalar(vec3 *v, double t);
 void vec3_divide_scalar(vec3 *v, double t);
 
-// Length calculations
+// length calculations
 double vec3_length(const vec3 *v);
 double vec3_length_squared(const vec3 *v);
 
-// Utility functions
+// utility functions
 void vec3_print(const vec3 *v);
 vec3 vec3_add(const vec3 *u, const vec3 *v);
 vec3 vec3_subtract(const vec3 *u, const vec3 *v);

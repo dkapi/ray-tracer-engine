@@ -7,7 +7,7 @@ hdr_texture_t* load_hdr_image(const char* filepath) {
 
     // load the HDR image using stb_image
     stbi_set_flip_vertically_on_load(1); // Flip vertically to match OpenGL-style coordinates
-    hdr_tex->data = stbi_loadf(filepath, &hdr_tex->width, &hdr_tex->height, &hdr_tex->channels, 3); // Force RGB
+    hdr_tex->data = stbi_loadf(filepath, &hdr_tex->width, &hdr_tex->height, &hdr_tex->channels, 3); // force RGB
     if (!hdr_tex->data) {
         fprintf(stderr, "failed to load HDR image: %s\n", filepath);
         free(hdr_tex);
@@ -68,11 +68,11 @@ color sample_hdr(const hdr_texture_t* hdr_tex, double u, double v) {
 }
 
 void direction_to_uv(const vec3* dir, double* u, double* v) {
-    double theta = atan2(dir->z, dir->x); // Longitude
-    double phi = acos(fmax(-1.0, fmin(1.0, dir->y))); // Latitude, clamped for safety
+    double theta = atan2(dir->z, dir->x); // longitude
+    double phi = acos(fmax(-1.0, fmin(1.0, dir->y))); // latitude, clamped for safety
 
-    *u = (theta + PI) / (2.0 * PI); // Map theta to [0, 1]
-    *v = 1.0 - (phi / PI);         // Map phi to [0, 1] and flip vertically
+    *u = (theta + PI) / (2.0 * PI); // Map to 0,1
+    *v = 1.0 - (phi / PI);         // Map to 0,1 and flip vertically
 }
 
 void free_hdr_texture(hdr_texture_t* hdr_tex) {

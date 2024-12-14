@@ -9,12 +9,11 @@
 #include "hittable.h"
 #include "textures/texture.h"
 
-// Forward declaration of `hit_record_t` to ensure it's recognized
+// forward declaration
 typedef struct hit_record hit_record_t;
 
 typedef struct material material_t;
 
-// Definition for scatter function
 typedef bool (*scatter_fn)(const material_t* mat, const ray_t* r_in, const hit_record_t* rec, color* attenuation, ray_t* scattered);
 typedef color (*emitted_fn)(const material_t* mat, double u, double v, const point3* p);
 

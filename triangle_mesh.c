@@ -5,17 +5,17 @@
 
 #define MAX_LINE_LENGTH 256 //should be fine, if anything too much
 
-mesh_t* load_obj(const char* filename, material_t* mat) {
+mesh_t* load_obj(const char* filename, material_t* mat, int size, double scale_factor) {
     FILE* file = fopen(filename, "r");
     if (!file) {
         fprintf(stderr, "failed to open OBJ file: %s\n", filename);
         return NULL;
     }
 
-    // temporary storage, idk maybe make more dynamic, works for now
-    point3* vertices = (point3*)malloc(10000 * sizeof(point3));
-    vec3* texture_coords = (vec3*)malloc(10000 * sizeof(vec3));
-    triangle_t** triangles = (triangle_t**)malloc(10000 * sizeof(triangle_t*));
+    // allocate memory based on size passed in params
+    point3* vertices = (point3*)malloc(size * sizeof(point3));
+    vec3* texture_coords = (vec3*)malloc(size * sizeof(vec3));
+    triangle_t** triangles = (triangle_t**)malloc(size * sizeof(triangle_t*));
 
     size_t vertex_count = 0;
     size_t texcoord_count = 0;
@@ -25,17 +25,34 @@ mesh_t* load_obj(const char* filename, material_t* mat) {
 
     while (fgets(line, sizeof(line), file)) {
         if (strncmp(line, "v ", 2) == 0) {
-            //vertex position
+            // vertex position
+            if (vertex_count >= size) {
+                fprintf(stderr, "vertex limit exceeded. Increase the size parameter.\n");
+                break;
+            }
             double x, y, z;
             sscanf(line + 2, "%lf %lf %lf", &x, &y, &z);
-            vertices[vertex_count++] = vec3_create_values(x, y, z);
+            point3 vertex = vec3_create_values(x, y, z);
+
+            // scaling models
+            vertex = vec3_multiply_by_scalar(&vertex, scale_factor);
+
+            vertices[vertex_count++] = vertex;
         } else if (strncmp(line, "vt ", 3) == 0) {
-            //texture coordinate
+            // Texture coordinate
+            if (texcoord_count >= size) {
+                fprintf(stderr, "texture coordinate limit exceeded. Increase the size parameter.\n");
+                break;
+            }
             double u, v;
             sscanf(line + 3, "%lf %lf", &u, &v);
             texture_coords[texcoord_count++] = vec3_create_values(u, v, 0.0);
         } else if (strncmp(line, "f ", 2) == 0) {
-            //face
+            // Face
+            if (triangle_count >= size) {
+                fprintf(stderr, "triangle limit exceeded. Increase the size parameter.\n");
+                break;
+            }
             int v[4], vt[4], vn[4];
             int num_vertices = sscanf(
                 line + 2,
@@ -47,7 +64,7 @@ mesh_t* load_obj(const char* filename, material_t* mat) {
             );
 
             if (num_vertices < 9) {
-                fprintf(stderr, "invalid face format: %s\n", line);
+                fprintf(stderr, "Invalid face format: %s\n", line);
                 continue;
             }
 
@@ -62,8 +79,12 @@ mesh_t* load_obj(const char* filename, material_t* mat) {
 
             triangles[triangle_count++] = create_triangle_uv(a, b, c, uv_a, uv_b, uv_c, mat);
 
-            // handling quads
+            // quadss
             if (num_vertices == 12) {
+                if (triangle_count >= size) {
+                    fprintf(stderr, "triangle limit exceeded while handling quads.\n");
+                    break;
+                }
                 point3* d = &vertices[v[3] - 1];
                 vec3* uv_d = (vt[3] > 0) ? &texture_coords[vt[3] - 1] : &default_uv;
 
@@ -96,9 +117,20 @@ mesh_t* load_obj(const char* filename, material_t* mat) {
     return mesh;
 }
 
-void add_mesh_to_world(mesh_t* mesh, hittable_list* world) {
+
+
+void add_mesh_to_world(mesh_t* mesh, hittable_list* world, const vec3* position) {
     for (size_t i = 0; i < mesh->triangle_count; i++) {
-        hittable_list_add(world, (hittable*)mesh->triangles[i]);
+        hittable* translated_triangle = (hittable*)translate_object((hittable*)mesh->triangles[i], position);
+        hittable_list_add(world, translated_triangle);
+    }
+}
+// can also call this to scale a loaded mesh
+void scale_mesh(mesh_t* mesh, double scale_factor) {
+    if (!mesh) return;
+
+    for (size_t i = 0; i < mesh->vertex_count; i++) {
+        mesh->vertices[i] = vec3_multiply_by_scalar(&mesh->vertices[i], scale_factor);
     }
 }
 
